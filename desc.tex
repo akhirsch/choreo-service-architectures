@@ -1,0 +1,37 @@
+\input{header}
+
+\newcommand{\newcommenter}[3]{%
+  \newcommand{#1}[1]{%
+    \textcolor{#2}{\small\textsf{[#3: {##1}]}}%
+  }%
+}
+\newcommenter{\todo}{red}{TODO}
+\newcommenter{\akh}{purple}{AKH}
+
+\usepackage{listings,color}
+\usepackage{wrapfig,framed}
+\usepackage{enumitem,amssymb}
+\usepackage[sort&compress,numbers]{natbib}
+
+\begin{document}
+
+\newtheorem{goal}{Goal}
+
+\input{intro}  % 1.5 pages
+\input{background}  % 3 pages
+\input{research}  % 7 pages
+\input{evaluation}  % 1 page
+\input{broader_impacts}  % .5 page
+\input{management}  % ~1 page
+\input{prior_results}  % 1 page
+
+\newpage
+\bibliographystyle{plainnat}
+\bibliography{bib/main}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
