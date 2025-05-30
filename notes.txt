@@ -15,9 +15,10 @@ Things we want to do in this grant:
 ** Potential overlap with the open-world choreographies grant
 
 Key Examples to claim:
+* Microservice architectures
 * Thread Pools
 * Web Server/Database
-* Paxos
+* Paxos (maybe skip, because we don't model failures)
 
 Potential Thrusts:
 1. Basic Building Blocks
@@ -32,3 +33,10 @@ Potential Thrusts:
 * Thread Pools
 * Web Server/Database
 * Paxos
+
+Story for potential systems people on the panel:
+  Choreographies are structured so you can just take a protocol design you wrote on the white board,
+  type it directly into your computer, and execute it for rapid prototyping.
+  Right now, the state of the art is missing critical language features that are needed for most systems protocols
+  (the classic example: you can't implement Paxos).
+  The proposed work fixes that problem!
