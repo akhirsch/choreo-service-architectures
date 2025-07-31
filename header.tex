@@ -1,83 +1,109 @@
 %!TEX root = desc.tex
+\newif\ifdraft\drafttrue
 
 \documentclass[11pt]{article}
-\usepackage{mathptmx}
+\usepackage[margin=1in]{geometry}
+\usepackage[sort&compress,numbers]{natbib}
+% amsthm needs to go before newtx for compatability reasons
+\usepackage{amsthm,amssymb}
+\usepackage{newtx}
+\usepackage{microtype}
+\frenchspacing
 
 \usepackage{mathpartir}
 \usepackage{stmaryrd}
+\usepackage{mathtools}
 
+\usepackage{suffix}
+\usepackage{xparse}
 
 %\usepackage{pslatex}
 %\usepackage{fullpage}
 \usepackage{xspace}
 \usepackage{verbatim}
+\usepackage{enumitem}
 %\usepackage{wrapfig}
 %\usepackage{tgpagella}
 \usepackage{url}
+\usepackage{breakurl}
 \usepackage[hidelinks,bookmarks=true]{hyperref}
 \usepackage{graphicx}
 \usepackage{subfig}
-%\usepackage[compact]{titlesec}
-%\usepackage[bf]{caption}
-%\usepackage{subcaption}
-\usepackage{fancyhdr}
-\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+%\usepackage{fancyhdr}
 \usepackage{float}
 \usepackage[font=small]{caption}
-\usepackage{doi}
+\usepackage[table,dvipsnames]{xcolor}
 
-\usepackage{comment}
-\usepackage{xcolor}
+% ===== Title and section header formatting ====
+\makeatletter
+\def\@author{}
+\def\author#1#2{\expandafter\def\expandafter\@author\expandafter{\@author{#1}{#2}}}
+\def\typeset@authors#1#2#3\_nil{%
+  \begin{tabular}[t]{c}#1\end{tabular}\\
+  {\large #2}
+  \ifx\relax#3\relax\else\and\typeset@authors#3\_nil\fi%
+}
+\def\maketitle{
+  \newpage%
+  \vbox to 1.2in{
+    \centering
+    \vspace*{\fill}
+      {\LARGE\bfseries\@title\par}
+      \vskip 0.75em
+      {\Large\begin{tabular}[t]{c}\expandafter\typeset@authors\@author\_nil\end{tabular}\par}
+    \vspace*{\fill}
+  }
+%  \begin{titlepage}
+%    \centering
+%    \vspace*{\fill}
+%      {\huge\@title\par}
+%      \vskip 2em
+%      {\Large\begin{tabular}[t]{c}\expandafter\typeset@authors\@author\_nil\end{tabular}\par}
+%    \vspace*{\fill}
+%  \end{titlepage}
+}
+%\def\typeset@affils#1#2#3\_nil{\textsuperscript{#1}#2\ifx\relax#3\relax\else\and\typeset@affils#3\_nil\fi}
+%\newcommand{\affils}[1]{\def\@affils{#1}}
+%\def\maketitle{
+%  \newpage%
+%  \vbox to 0.9in{
+%    \centering
+%    \vspace*{\fill}
+%      {\Large\bfseries\@title\par}
+%      \vskip 1ex
+%      {\normalsize\begin{tabular}[t]{c}\@author\end{tabular}\par}
+%      \ifx\relax\@affils\relax\else
+%        \vskip 0.5ex
+%        {\small\begin{tabular}[t]{c}\expandafter\typeset@affils\@affils\_nil\end{tabular}\par}
+%      \fi
+%    \vspace*{\fill}
+%  }
+%}
+\makeatother
+
+\titlespacing*{\section}{0pt}{*2.5}{*2}
+\titlespacing*{\subsection}{0pt}{*2}{*1}
+%\titlespacing*{\subsubsection}{0pt}{*0.75}{*0.5}
+\titleformat{\paragraph}[runin]{\bfseries}{}{0pt}{}[.]
+\titlespacing{\paragraph}{0pt}{*1.5}{*1}
+\titleformat{\subparagraph}[runin]{\bfseries}{}{0pt}{}
+\titlespacing{\subparagraph}{0pt}{*1}{*1}
 
 
-\colorlet{darkpink}{red!60!purple!50}
-\colorlet{lightpurple}{purple!70!blue!100}
-\colorlet{teal}{green!70!blue!90}
-\colorlet{darkgreen}{green!40!black!100}
-\colorlet{orange}{orange!70!red!80}
+%\renewcommand{\textfraction}{0.01}
+%\setcounter{topnumber}{100}
+%\setcounter{dbltopnumber}{100}
+%\setcounter{totalnumber}{100}
+%\renewcommand{\topfraction}{.9}
+%\renewcommand{\floatpagefraction}{.9}
+%\renewcommand{\dbltopfraction}{.9}
+%\renewcommand{\dblfloatpagefraction}{.9}
+%
+%\newcounter{cnt}
 
-\newcommand{\pink}[1]{\textcolor{darkpink}{#1}}
-\newcommand{\purple}[1]{\textcolor{lightpurple}{#1}}
-\newcommand{\teal}[1]{\textcolor{teal}{#1}}
-\newcommand{\green}[1]{\textcolor{green}{#1}}
-\newcommand{\orange}[1]{\textcolor{orange}{#1}}
-
-\newcommand{\red}[1]{\textcolor{red}{#1}}
-\newcommand{\blue}[1]{\textcolor{blue}{#1}}
-
-\newcommand{\ignore}[1]{}
-
-\usepackage{listings,color}
-
-
-% Ariel (Helvetica)
-%\renewcommand{\rmdefault}{phv}
-%\renewcommand{\sfdefault}{phv}
-
-% Palatino
-%\renewcommand{\rmdefault}{ppl}
-%\renewcommand{\sfdefault}{ppl}
-
-\renewcommand{\textfraction}{0.01}
-\setcounter{topnumber}{100}
-\setcounter{dbltopnumber}{100}
-\setcounter{totalnumber}{100}
-\renewcommand{\topfraction}{.9}
-\renewcommand{\floatpagefraction}{.9}
-\renewcommand{\dbltopfraction}{.9}
-\renewcommand{\dblfloatpagefraction}{.9}
-
-\newcounter{cnt}
-
-\setlength{\abovecaptionskip}{0in}
-\setlength{\belowcaptionskip}{0in}
-
-
-% \newcommand{\todo}[1]{}
-% \newcommand{\ar}[1]{}
-% \newcommand{\done}[1]{}
-% \newcommand{\ca}[1]{}
-% \newcommand{\jw}[1]{}
+%\setlength{\abovecaptionskip}{0in}
+%\setlength{\belowcaptionskip}{0in}
 
 
 %make latex layout figures better
@@ -88,15 +114,72 @@
 
 \date{}
 
-\newsavebox{\mylistingbox}
+%\newsavebox{\mylistingbox}
+%
+%\pagestyle{fancy}
+%\fancyhead{}
+%\fancyhf{}
+%\renewcommand{\headrulewidth}{0pt}
+%\setcounter{page}{1}
+%%\usepackage{epstopdf}
 
-\pagestyle{fancy}
-\fancyhead{}
-\fancyhf{}
-\renewcommand{\headrulewidth}{0pt}
-\setcounter{page}{1}
-%\usepackage{epstopdf}
+% Notes
+\newcommand{\newcommenter}[3]{%
+  \ifdraft
+    \newcommand{#1}[1]{%
+      \begingroup\small\sffamily\color{#2}%
+        [#3: ##1]%
+      \endgroup%
+    }%
+  \else
+    \newcommand{#1}[1]{\ignorespaces}
+  \fi
+}
+\definecolor{darkgreen}{rgb}{0,0.7,0}
 
+\newcommenter{\ethan}{darkgreen}{Ethan}
+\newcommenter{\akh}{purple}{AKH}
+
+% === Outline structure ===
+\usepackage{boxedminipage}
+\makeatletter
+\newcounter{outline@templateDepth}
+\newcounter{outline@depth}
+\newenvironment{outline}[2][0]{%
+  \newlist{lvl}{enumerate}{6}
+  \setlist[lvl]{parsep=0.33\baselineskip,itemsep=0pt,topsep=0pt,leftmargin=1.5em}
+  \setlist[lvl,1]{leftmargin=*,topsep=0.5em}
+  %
+  \setcounter{outline@templateDepth}{#1}
+  \setcounter{outline@depth}{1}
+  \@whilenum\value{outline@templateDepth}<6\do{%
+    \ifcase\value{outline@templateDepth}\relax
+      \setlist*[lvl,\value{outline@depth}]{label=\Roman*.}
+    \or
+      \setlist*[lvl,\value{outline@depth}]{label=\Alph*.}
+    \or
+      \setlist*[lvl,\value{outline@depth}]{label=\arabic*.}
+    \or
+      \setlist*[lvl,\value{outline@depth}]{label=\alph*.}
+    \or
+      \setlist*[lvl,\value{outline@depth}]{label=\roman*.}
+    \or
+      \setlist*[lvl,\value{outline@depth}]{label=-}
+    \fi
+    \stepcounter{outline@depth}
+    \stepcounter{outline@templateDepth}
+  }
+  \if\relax\detokenize{#2}\relax\else
+    {\bfseries #2\par}
+  \fi
+  \noindent%
+  \begin{lvl}
+}{\end{lvl}\vspace{0.25em}}
+\newenvironment{boxedoutline}[2][0]{
+  \begin{boxedminipage}{\textwidth}
+  \begin{outline}[#1]{#2}
+}{\end{outline}\end{boxedminipage}\vspace{0.5em}\par}
+\makeatother
 
 %%% Local Variables:
 %%% mode: latex

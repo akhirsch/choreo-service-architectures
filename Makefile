@@ -4,7 +4,7 @@ main_pdf = final.pdf
 # The directory of your bib files
 bib_dir = bib
 
-LATEXMK := latexmk -pdflatex=lualatex -pdf -synctex=1
+LATEXMK := latexmk -lualatex -bibtex -synctex=1
 
 # Split a pdf
 # gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dFirstPage=1 -dLastPage=15 -sOUTPUTFILE=desc_no_refs.pdf desc.pdf
@@ -18,13 +18,12 @@ pdfsb = budget.pdf facilities.pdf data.pdf personnel.pdf summary.pdf mentoring.p
 # look for files
 find = $(foreach dir,$(1),$(wildcard $(dir)/*.$(2)))
 common_tex_files = header.tex
-tex_files = desc.tex t1.tex t2.tex t3.tex intro.tex background.tex broader_impacts.tex evaluation.tex management.tex research.tex
+tex_files := $(shell find . -name "*.tex")
 
 junk +=	*.aux *.log *.lof *.lot *.toc *.blg *.bbl *~ *.synctex.gz *.fdb_latexmk *.fls
 
 $(main_pdf): $(pdfsb) desc.pdf
 	pdfjam $(pdfs) --outfile $(main_pdf)
-
 
 all: all references.pdf desc_no_refs.pdf
 

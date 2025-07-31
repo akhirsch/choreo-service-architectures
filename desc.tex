@@ -1,17 +1,20 @@
 \input{header}
 
-\newcommand{\newcommenter}[3]{%
-  \newcommand{#1}[1]{%
-    \textcolor{#2}{\small\textsf{[#3: {##1}]}}%
-  }%
-}
-\newcommenter{\todo}{red}{TODO}
-\newcommenter{\akh}{purple}{AKH}
+\title{Collaborative Research: CORE: SHF: \\ Choreographic Service Architectures}
+\author{Ethan Cecchetti}{University of Wisconsin--Madison}
+\author{Andrew K. Hirsch}{University at Buffalo, SUNY}
 
-\usepackage{listings,color}
-\usepackage{wrapfig,framed}
-\usepackage{enumitem,amssymb}
-\usepackage[sort&compress,numbers]{natbib}
+% If this is a draft, add the draft warning.
+\ifdraft
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \fancyhf{}
+  \def\headrulewidth{0pt}
+  \fancyfoot[C]{\thepage}
+  \fancyhead[C]{\color{red}\large\itshape\fbox{Draft -- Do Not Distribute}}
+\else
+  \pagestyle{plain}
+\fi
 
 \begin{document}
 

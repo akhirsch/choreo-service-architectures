@@ -1,20 +1,57 @@
 %!TEX root = desc.tex
-\begin{center}
-{\bf \Large TITLE HERE}
-\end{center}
+\maketitle
 
 \section{Introduction}
 \label{sec:intro}
 
+\begin{outline}{Introduction Outline}
+  \item Programming concurrent and distributed systems correctly is hard, but choreographies can help!
+    \begin{lvl}
+      \item A major promise of choreographies is that the implementation of a protocol
+        can directly mirror the structure of a protocol specification.
+      \item This idea simplifies system building, helps with rapid prototyping, and simplifies checking that the implementation matches the spec.
+    \end{lvl}
 
-\paragraph{Intellectual Merit.} 
+    \item State-of-the-art choreographies are missing critical features needed to accomplish this goal.
+    \begin{lvl}
+      \item Common systems with complex protocols include
+        microservice architectures, thread pools, web servers, and distributed consensus protocols (e.g., Paxos).
+        \ethan{I'm not sure we want to talk about Paxos if we're not doing asynchrony.}
+      \item None of these can be implemented with current choreographic technology for a fundamental reason:
+        every message must be sent and received in a pre-determined order,
+        and all parties must know each other's identities \emph{in advance}.
+      \item The above protocols violate this assumption in multiple ways.
+        \begin{lvl}
+          \item They wait for messages that may arrive at any time and execute in response.
+          \item Messages may come from any client, and the recipient only learns the client's identity with the message arrives.
+          \item Nodes/threads/processes/etc are often spawned dynamically in response to requests
+            with identities that cannot be known in advance.
+            \ethan{We've partially solved this one already!}
+        \end{lvl}
+    \end{lvl}
+
+  \item We propose \emph{choreographic service architectures} to support these features.
+    \begin{lvl}
+      \item
+    \end{lvl}
+  \ethan{I need to finish this later.}
+\end{outline}
+\hrule
+\vspace{0.5em}
+
+\paragraph{Intellectual Merit}
 
 
 \subsection{Motivation ...}
 \label{sec:motivation}
 
 
-\paragraph{Research Team.}   
+\subsection{Research Team}
+
+\subparagraph{Ethan Cecchetti} is an expert...
+
+\subparagraph{Andrew K. Hirsch} is an expert in choreographic programming...
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "desc"
