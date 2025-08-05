@@ -40,3 +40,7 @@ Story for potential systems people on the panel:
   Right now, the state of the art is missing critical language features that are needed for most systems protocols
   (the classic example: you can't implement Paxos/microservice architectures).
   The proposed work fixes that problem!
+
+Event-driven promises: When this promise resolves, take an action
+  e.g., when 16 out of the following 31 people send me the same vote, keep computing
+Include interrupts as well (e.g., "process requests from that group while waiting for responses from the DB")
