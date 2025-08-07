@@ -15,26 +15,58 @@
     \item State-of-the-art choreographies are missing critical features needed to accomplish this goal.
     \begin{lvl}
       \item Common systems with complex protocols include
-        microservice architectures, thread pools, web servers, and distributed consensus protocols (e.g., Paxos).
+        web servers, microservice architectures, distributed consensus protocols (e.g., Paxos), and thread pools.
         \ethan{I'm not sure we want to talk about Paxos if we're not doing asynchrony.}
       \item None of these can be implemented with current choreographic technology for a fundamental reason:
-        every message must be sent and received in a pre-determined order,
+        every message must be sent and received in a pre-determined order by a pre-determined set of locations,
         and all parties must know each other's identities \emph{in advance}.
-      \item The above protocols violate this assumption in multiple ways.
+      \item The above protocols violate these assumptions in multiple ways.
         \begin{lvl}
-          \item They wait for messages that may arrive at any time and execute in response.
+          \item They wait for messages that may arrive at any time (or not at all) without knowing when.
           \item Messages may come from any client, and the recipient only learns the client's identity with the message arrives.
+          \item They execute in response to one or more messages arriving, and may do so an unbounded number of times.
           \item Nodes/threads/processes/etc are often spawned dynamically in response to requests
             with identities that cannot be known in advance.
             \ethan{We've partially solved this one already!}
+%          \item Web servers wait for a message from any (unknown) client.
+%          \item Microservices are similar, but may only accept messages from a specific set of clients.
+%          \item Consensus protocols wait for messages to arrive from any subset of a known set of peer nodes.
+%          \item Thread pools spawn and kill threads to load balance effectively.
+%          \item All these protocols wait for one or more messages
+%            that may or may not ever arrive and execute in response.
         \end{lvl}
     \end{lvl}
 
-  \item We propose \emph{choreographic service architectures} to support these features.
+  \item We propose \emph{choreographic service architectures}, new features to support these types of applications.
     \begin{lvl}
-      \item
+      \item Wait-until-called paradigm
+        \begin{lvl}
+          \item Instead of executing a specific program, just wait until a client invokes the service.
+          \item Supports web servers and microservices.
+        \end{lvl}
+
+      \item General multi-receives
+        \begin{lvl}
+          \item The receive specifies a set of senders they are listening for (or just accept from anyone)
+            and the number of messages they are waiting on.
+          \item When enough messages from the specified senders arrive, the multi-receive returns allowing them to execute.
+          \item Multi-receive explicitly provides the recipient with the list of messages that arrived in order and the identity of the sender of each.
+        \end{lvl}
+
+      \item Spawning and killing threads
+        \begin{lvl}
+          \item We have preliminary work on a fork-join paradigm where new threads only exist in a bounded scope.
+          \item Protocols like thread pools need an unbounded scope, but that is challenging to know who is alive and who isn't.
+        \end{lvl}
     \end{lvl}
-  \ethan{I need to finish this later.}
+  \ethan{%
+    I was having real trouble with arguing for event-driven promises.
+    Feel free to add that in.
+    Also, interrupts feel totally bizarre in this setting (unless they're implemented as a spawned thread waiting)
+    because the choreography no longer specifies a bunch of in-order programs that run as a concurrent system;
+    individual locations are now out-of-order based on the interrupts.
+    I wasn't sure what to do with that.
+  }
 \end{outline}
 \hrule
 \vspace{0.5em}
