@@ -1,40 +1,39 @@
 Throughline of the grant: all of this stuff makes use of first-class location names and process polymorphism
 
-Things we want to do in this grant:
-
+# Things we want to do in this grant:
 * multicast (not a contribution) / multi-receive (a contribution!)
 * analyze how interpreting receive as a promise allows us to deal with async networks (is this the right proposal?)
 * Some form of select (respond to one of these incoming messages) (maybe generalized multirecieve?)
 * Fork/join (real thread pools)
-** Example: minimum # of threads at any time, and spawn/kill threads as needed  to maintain max(min_threads, live_tasks) threads
+  - Example: minimum # of threads at any time, and spawn/kill threads as needed  to maintain max(min_threads, live_tasks) threads
 * Event-driven promises for receives (include ordering information on receives)
 * Service architectures: wait-until-called paradigm?
-** Waiting to receive a request is not a deadlock!
-** Mix choreographies with RPC
-** Unlike session-type replication, thread not spawned when request received
-** Potential overlap with the open-world choreographies grant
+  - Waiting to receive a request is not a deadlock!
+  - Mix choreographies with RPC
+  - Unlike session-type replication, thread not spawned when request received
+  - Potential overlap with the open-world choreographies grant
 
-Key Examples to claim:
+# Key Examples to claim:
 * Microservice architectures
 * Thread Pools
 * Web Server/Database
 * Paxos (maybe skip, because we don't model failures)
 
-Potential Thrusts:
+# Potential Thrusts:
 1. Basic Building Blocks
-* First-Class Polymorphism
-* Event-Driven Promises
+  * First-Class Polymorphism
+  * Event-Driven Promises
 2. Service Architectures
-* RPC ideas
-* Basic open-world architecture, potentially using ideas from Andrew's other grant
-* But if Andrew's other grant fails, we can still do a basic version
+  * RPC ideas
+  * Basic open-world architecture, potentially using ideas from Andrew's other grant
+  * But if Andrew's other grant fails, we can still do a basic version
 3. Building Examples
-* Add this to Pirouette compiler
-* Thread Pools
-* Web Server/Database
-* Paxos
+  * Add this to Pirouette compiler
+  * Thread Pools
+  * Web Server/Database
+  * Paxos
 
-Story for potential systems people on the panel:
+# Story for potential systems people on the panel:
   Choreographies are structured so you can just take a protocol design you wrote on the white board,
   type it directly into your computer, and execute it for rapid prototyping.
   Right now, the state of the art is missing critical language features that are needed for most systems protocols
