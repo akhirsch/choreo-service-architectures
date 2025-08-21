@@ -88,7 +88,24 @@ In this way, choreographies aim to simply system building, help with rapid proto
 and simplify both checking that the implementation matches the specification
 and analyzing important system properties.
 
-The current state of choreographies, however, fails to adequately support these goals for many real systems.
+While existing choreographic theory has advanced rapidly since its introduction just over a decade ago~\citep{CarboneM13,HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}\ethan{what else?},
+all existing work includes a set of extremely strong assumptions:
+\begin{enumerate}
+  \item There must be a pre-determined set of locations.
+  \item Those locations must send and receive messages in a pre-determined order.
+  \item The senders and recipients of each message must be know to all relevant parties in advance.
+\end{enumerate}
+%there must be (1)~a pre-determined set of locations
+%who (2)~send and receive messages in a pre-determined order,
+%and (3)~all parties must know each others' identities in advance.
+
+These assumptions rule out numerous common distributed system structures,
+including client-server models, microservice architectures, consensus protocols, and even simple thread pools,
+as each violates them in multiple ways.
+They require parties to wait for messages without knowing when or if they will arrive,
+either from clients, other consensus nodes, or a pool manager.
+Messages may come from any number of senders, and the recipient only learns their identity when the message arrives.
+\ethan{It's broken in more ways!}
 
 \paragraph{Intellectual Merit}
 
