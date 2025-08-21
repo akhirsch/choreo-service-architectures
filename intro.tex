@@ -71,6 +71,25 @@
 \hrule
 \vspace{0.5em}
 
+Nearly every major computer system now relies on substantial concurrency for performance and scalability,
+yet designing and implementing correct concurrent systems is famously challenging.
+The new paradigm of \emph{choreographic programming}~\citep{Montesi13,Montesi23} offers to simplify development and analysis of such systems.
+Instead of writing separate programs for each thread, process, or node, within a system---forcing developers to analyze the complex interplay of these programs---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+choreographies mirror more informal protocol specifications with a single top-level program
+describing both the local operations of each piece of the system and how they interact.
+
+The promise of choreographic programming is twofold.
+First, the implementation of a protocol can directly mirror its specification.
+%with one program describing the behaviors and interactions of every part of the system.
+\ethan{I think a small example here would be useful.}
+Second, by combining different programs, global control flows become more visible
+and drastically simplify analysis of important properties like deadlock freedom~\citep{CarboneM13}.
+In this way, choreographies aim to simply system building, help with rapid prototyping,
+and simplify both checking that the implementation matches the specification
+and analyzing important system properties.
+
+The current state of choreographies, however, fails to adequately support these goals for many real systems.
+
 \paragraph{Intellectual Merit}
 
 
