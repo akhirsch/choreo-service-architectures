@@ -89,25 +89,50 @@ and simplify both checking that the implementation matches the specification
 and analyzing important system properties.
 
 While existing choreographic theory has advanced rapidly since its introduction just over a decade ago~\citep{CarboneM13,HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}\ethan{what else?},
-all existing work includes a set of extremely strong assumptions:
+existing work still relies on the following extremely strong assumptions:
 \begin{enumerate}
-  \item There must be a pre-determined set of locations.
-  \item Those locations must send and receive messages in a pre-determined order.
-  \item The senders and recipients of each message must be know to all relevant parties in advance.
+  \item\label{li:assume:static-locs}
+    There must be a pre-determined set of locations.
+  \item\label{li:assume:known-order}
+    Those locations must send and receive messages in a pre-determined order.
+  \item\label{li:assume:known-endpoints}
+    The senders and recipients of each message must be know to all relevant parties in advance.
 \end{enumerate}
 %there must be (1)~a pre-determined set of locations
 %who (2)~send and receive messages in a pre-determined order,
 %and (3)~all parties must know each others' identities in advance.
 
 These assumptions rule out numerous common distributed system structures,
-including client-server models, microservice architectures, consensus protocols, and even simple thread pools,
-as each violates them in multiple ways.
-They require parties to wait for messages without knowing when or if they will arrive,
-either from clients, other consensus nodes, or a pool manager.
-Messages may come from any number of senders, and the recipient only learns their identity when the message arrives.
-\ethan{It's broken in more ways!}
+including client-server models, like web servers or microservice architectures, thread pools, and consensus protocols, as each violates them in multiple ways.
+Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
+These systems all require parties to wait for messages without knowing when or if they will arrive,
+either from clients, other consensus nodes, or a pool manager, violating assumption~(\ref{li:assume:known-order}).
+Finally, messages may come from many different senders, and the recipient only learns their identity when the message arrives,
+violating assumption~(\ref{li:assume:known-endpoints}).
 
-\paragraph{Intellectual Merit}
+We propose to design, analyze, and implement new features in choreographic languages that eliminate the need for these assumptions,
+yet still guarantee important properties like deadlock freedom and support simplified programming and analysis.
+\ethan{Advertise developing new theory?}
+These innovations will allow us to build the service-based architectures mentioned above as choreographies.
+
+\subsection{Core Features}
+We propose to support three new features currently lacking in choreographies.
+
+\paragraph{Spawning Threads}
+The first feature is the ability to spawn and kill new computational units---threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+a core feature of many concurrent systems.
+A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
+but those works lacked critical features for realistic programming, like higher-order operations,
+and required threads to be spawned only to execute specific pre-defined operations.
+
+We propose a much more general structure, where there is little distinction between
+and existing execution thread and a newly-spawned one and threads may be killed when they are no longer needed.
+%Moreover, we will integrate this new feature with a host of modern choreographic advances,
+%including higher-order functions and process polymorphism.
+
+%Each of these features will leverage recent work by the PIs on first-class process polymorphism~\citep{SamuelsonHC25}.
+
+\subsection{Intellectual Merit}
 
 
 \subsection{Motivation ...}
