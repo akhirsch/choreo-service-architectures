@@ -115,25 +115,51 @@ yet still guarantee important properties like deadlock freedom and support simpl
 \ethan{Advertise developing new theory?}
 These innovations will allow us to build the service-based architectures mentioned above as choreographies.
 
-\subsection{Core Features}
-We propose to support three new features currently lacking in choreographies.
-
-\paragraph{Spawning Threads}
-The first feature is the ability to spawn and kill new computational units---threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
-a core feature of many concurrent systems.
-A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
-but those works lacked critical features for realistic programming, like higher-order operations,
-and required threads to be spawned only to execute specific pre-defined operations.
-
-We propose a much more general structure, where there is little distinction between
-and existing execution thread and a newly-spawned one and threads may be killed when they are no longer needed.
-%Moreover, we will integrate this new feature with a host of modern choreographic advances,
-%including higher-order functions and process polymorphism.
-
-%Each of these features will leverage recent work by the PIs on first-class process polymorphism~\citep{SamuelsonHC25}.
-
 \subsection{Intellectual Merit}
+We propose to support three new features currently lacking in choreographies.
+\ethan{Should these just be the thrusts?}
 
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Spawning Threads:}
+    The first feature is the ability to spawn and kill new computational units---threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+    a core feature of many concurrent systems.
+    A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
+    but those works lacked critical features for realistic programming, like higher-order operations,
+    and required threads to be spawned only to execute specific pre-defined operations.
+
+    We propose a much more general structure, where there is little distinction between
+    and existing execution thread and a newly-spawned one and threads may be killed when they are no longer needed.
+    Moreover, we will integrate this dynamic thread management with a host of modern choreographic advances,
+    including higher-order functions and process polymorphism.
+
+  \item \textbf{Wait-Until-Called Paradigm:}
+    The second core feature is to allow choreographic specification of services
+    that process requests when called by any client and then wait for another request.
+    These services cannot be implemented with existing choreographic tools,
+    as they require services to accept messages from many different clients---potentially even unknown ones---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+    without knowing who will make a request before it arrives.
+
+    In addition to requiring message recipients to only learn the sender's identity when the message arrives,
+    this important paradigm will also require a fundamentally new notion of deadlock freedom.
+    Existing choreographies define deadlock freedom to mean either every location has terminated or some location can execute.
+    With wait-until-called services, however, a service may be safely waiting for a new request when all others have terminated without indicating any problem.
+    We propose to develop new choreographic theory to develop and analyze systems that include such services.
+
+  \item \textbf{Message Multi-Receives:}
+    While existing choreographies allow for multi-sends---broadcast messages with multiple recipients sent in no particular order---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+    they do not allow \emph{multi-receives}, where one recipient waits on messages from multiple senders without a pre-specified order.
+    We propose to design a general and powerful version of this feature
+    to allow recipients to wait on only a fixed number of messages from a potentially larger number of senders,
+    and know which messages arrived and in which order once the threshold is reached.
+    This is precisely the language primitive needed to implement redundant protocols like distributed consensus
+    that are designed to be robust to failures where messages may not arrive.
+\end{itemize}
+
+Importantly, proper design of each of these features will rely heavily
+on recent work by the PIs on first-class process polymorphism~\citep{SamuelsonHC25}.
+This work shows how to choreographies can support dynamically computation of location names,
+which is critical for writing code that interacts with newly spawned threads
+or receives messages from unknown clients and must respond to them.
 
 \subsection{Motivation ...}
 \label{sec:motivation}
