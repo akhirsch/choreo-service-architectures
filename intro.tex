@@ -88,6 +88,14 @@ In this way, choreographies aim to simply system building, help with rapid proto
 and simplify both checking that the implementation matches the specification
 and analyzing important system properties.
 
+\akh{This feels weak.
+  In particular, I can imagine exactly this intro as a reasonable POPL/OOPSLA paper.
+  We want to demonstrate that this is worth 3-6 of those papers!
+}
+\akh{This also has a seperability problem: right now, this reads as ``we need to solve all of these problems for any of them to be worth it.''
+  We instead want to say ``solving any one of these problems will be helpful, but solving them together is synergistic.''
+}
+
 While existing choreographic theory has advanced rapidly since its introduction just over a decade ago~\citep{CarboneM13,HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}\ethan{what else?},
 existing work still relies on the following extremely strong assumptions:
 \begin{enumerate}
@@ -120,7 +128,9 @@ We propose to support three new features currently lacking in choreographies.
 \ethan{Should these just be the thrusts?}
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Spawning Threads:}
+\item \textbf{Spawning Threads:}
+    \akh{Is this \emph{just} our POPL submission? What else needs to be done, and why?}
+
     The first feature is the ability to spawn and kill new computational units---threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
     a core feature of many concurrent systems.
     A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
