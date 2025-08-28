@@ -74,11 +74,6 @@
 \noindent\textbf{AKH Thoughts}
 I think we may want to have thrusts similar to the following:
 \begin{enumerate}
-\item \textbf{New Theory}
-  \begin{itemize}
-  \item Strong EPP
-  \item Wait-Until-Called
-  \end{itemize}
 \item \textbf{New Features}
   \begin{itemize}
   \item Spawning
@@ -90,11 +85,18 @@ I think we may want to have thrusts similar to the following:
   \item Avoid exponential Code Blowup (don't duplicate code if you know you must be in one branch!)
   \item Create a benchmark and discuss potential runtime blowup coming from code blowup
   \end{itemize}
+\item \textbf{New Theory}
+  \begin{itemize}
+  \item Wait-Until-Called
+  \item Strong EPP \ethan{connection: even harder to argue for correctness of EPP once you have process polymorphism if you don't have Strong EPP done.}
+  \end{itemize}
 \end{enumerate}
 
 If we do this, we may want to change the name of the grant to something like ``Empowering Process Polymorphism.''
 
-\vspace{05em}
+\vspace{0.5em}
+\hrule
+\vspace{0.5em}
 
 Nearly every major computer system now relies on substantial concurrency for performance and scalability,
 yet designing and implementing correct concurrent systems is famously challenging.
@@ -112,17 +114,27 @@ and drastically simplify analysis of important properties like deadlock freedom~
 In this way, choreographies aim to simply system building, help with rapid prototyping,
 and simplify both checking that the implementation matches the specification
 and analyzing important system properties.
+Rapid progress in choreography theory in the past few years~\citep[e.g.,][]{HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}
+has brought this promise closer into view, but substantial work remains.
 
-\akh{This feels weak.
-  In particular, I can imagine exactly this intro as a reasonable POPL/OOPSLA paper.
-  We want to demonstrate that this is worth 3-6 of those papers!
-}
-\akh{This also has a seperability problem: right now, this reads as ``we need to solve all of these problems for any of them to be worth it.''
-  We instead want to say ``solving any one of these problems will be helpful, but solving them together is synergistic.''
-}
+%\akh{This feels weak.
+%  In particular, I can imagine exactly this intro as a reasonable POPL/OOPSLA paper.
+%  We want to demonstrate that this is worth 3-6 of those papers!
+%}
+%\akh{This also has a seperability problem: right now, this reads as ``we need to solve all of these problems for any of them to be worth it.''
+%  We instead want to say ``solving any one of these problems will be helpful, but solving them together is synergistic.''
+%}
 
-While existing choreographic theory has advanced rapidly since its introduction just over a decade ago~\citep{CarboneM13,HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}\ethan{what else?},
-existing work still relies on the following extremely strong assumptions:
+Notably, a recent result by the PIs showing how to safely enable first-class location polymorphism~\citep{SamuelsonHC25} opens critical new avenues for research.
+Choreographies can now dynamically compute and communicate which location(s) will perform any given action,
+allowing run-time flexibility and increased code reuse.
+On its own, this result is an important addition to the choreographic toolbox,
+but its real power lies in creating a foundation to accelerate advances in choreographic technology.
+
+We propose to \emph{leverage process polymorphism to develop substantial new theory to realize the promise of the choreographic programming paradigm}.
+Guiding this work will be the goal of enabling choreographies to specify common concurrent and distributed systems as choreographies.
+Existing choreographic theory relies on three extremely strong assumptions
+that each rule out many of these common architectures, including thread pools, consensus protocols, and client-server models like web servers or microservice architectures.
 \begin{enumerate}
   \item\label{li:assume:static-locs}
     There must be a pre-determined set of locations.
@@ -131,18 +143,41 @@ existing work still relies on the following extremely strong assumptions:
   \item\label{li:assume:known-endpoints}
     The senders and recipients of each message must be know to all relevant parties in advance.
 \end{enumerate}
-%there must be (1)~a pre-determined set of locations
-%who (2)~send and receive messages in a pre-determined order,
-%and (3)~all parties must know each others' identities in advance.
-
-These assumptions rule out numerous common distributed system structures,
-including client-server models, like web servers or microservice architectures, thread pools, and consensus protocols, as each violates them in multiple ways.
 Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
-These systems all require parties to wait for messages without knowing when or if they will arrive,
-either from clients, other consensus nodes, or a pool manager, violating assumption~(\ref{li:assume:known-order}).
-Finally, messages may come from many different senders, and the recipient only learns their identity when the message arrives,
+Microserves must wait for requests without knowing when or if they will arrive, violating assumption~(\ref{li:assume:known-order}).
+Finally, consensus nodes may simultaneously wait for messages from many senders
+and only learn who sent valid messages after they arrive,
 violating assumption~(\ref{li:assume:known-endpoints}).
 
+Importantly, these assumptions are not fundamental to choreographies,
+but rather constraints needed to enforce deadlock freedom in the absence of process polymorphism with first-class location names.
+A newly spawned thread must have a name that existing computations can refer to.
+When messages can be received out of order or the recipient is unaware of who a message might come from,
+the message must identify its sender, requiring a first-class representation of location names.
+We propose to develop new tools and theory based on our recent work on first-class process polymorphism~\citep{SamuelsonHC25}
+to remove these assumptions and enable choreographic implementations of far more systems.
+
+\ethan{Something here about efficiency and need for new theory like wait-until-called deadlock freedom.}
+
+\subsection{Intellectual Merit}
+
+We propose to accomplish the above goals through three independent but highly synergistic thrusts.
+\begin{itemize}
+  \item \textit{Thrust 1 (Polymorphism-Enabled Features):}
+  \item \textit{Thrust 2 (Improved Compilation for Process Polymorphism):}
+  \item \textit{Thrust 3 (\ethan{Need a good name for the theory thrust}):}
+\end{itemize}
+
+
+%These assumptions rule out numerous common distributed system structures,
+%including client-server models, like web servers or microservice architectures, thread pools, and consensus protocols, as each violates them in multiple ways.
+%Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
+%These systems all require parties to wait for messages without knowing when or if they will arrive,
+%either from clients, other consensus nodes, or a pool manager, violating assumption~(\ref{li:assume:known-order}).
+%Finally, messages may come from many different senders, and the recipient only learns their identity when the message arrives,
+%violating assumption~(\ref{li:assume:known-endpoints}).
+
+\iffalse
 We propose to design, analyze, and implement new features in choreographic languages that eliminate the need for these assumptions,
 yet still guarantee important properties like deadlock freedom and support simplified programming and analysis.
 \ethan{Advertise developing new theory?}
@@ -195,12 +230,15 @@ on recent work by the PIs on first-class process polymorphism~\citep{SamuelsonHC
 This work shows how to choreographies can support dynamically computation of location names,
 which is critical for writing code that interacts with newly spawned threads
 or receives messages from unknown clients and must respond to them.
+\fi
 
-\subsection{Motivation ...}
-\label{sec:motivation}
+%\subsection{Motivation ...}
+%\label{sec:motivation}
 
 
 \subsection{Research Team}
+
+\ethan{We have a longstanding collaboration. Drive that home.}
 
 \subparagraph{Ethan Cecchetti} is an expert...
 
