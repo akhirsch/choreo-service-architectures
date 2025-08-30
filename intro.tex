@@ -73,24 +73,24 @@
 
 \noindent\textbf{AKH Thoughts}
 I think we may want to have thrusts similar to the following:
-\begin{enumerate}
+\begin{outline}[2]{}
 \item \textbf{New Features}
-  \begin{itemize}
+  \begin{lvl}
   \item Spawning
   \item Multireceive 
   \item Events
-  \end{itemize}
+  \end{lvl}
 \item \textbf{Compilation Techniques}
-  \begin{itemize}
+  \begin{lvl}
   \item Avoid exponential Code Blowup (don't duplicate code if you know you must be in one branch!)
   \item Create a benchmark and discuss potential runtime blowup coming from code blowup
-  \end{itemize}
+  \end{lvl}
 \item \textbf{New Theory}
-  \begin{itemize}
+  \begin{lvl}
   \item Wait-Until-Called
   \item Strong EPP \ethan{connection: even harder to argue for correctness of EPP once you have process polymorphism if you don't have Strong EPP done.}
-  \end{itemize}
-\end{enumerate}
+  \end{lvl}
+\end{outline}
 
 If we do this, we may want to change the name of the grant to something like ``Empowering Process Polymorphism.''
 
@@ -158,6 +158,8 @@ We propose to develop new tools and theory based on our recent work on first-cla
 to remove these assumptions and enable choreographic implementations of far more systems.
 
 \ethan{Something here about efficiency and need for new theory like wait-until-called deadlock freedom.}
+
+\ethan{Do we want to add a note about preliminary work to the intro?}
 
 \subsection{Intellectual Merit}
 

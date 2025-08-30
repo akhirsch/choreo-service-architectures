@@ -1,9 +1,47 @@
 %!TEX root = desc.tex
 
 %thrust1
-\subsection{Thrust 1 - }
+\subsection{Thrust 1: Polymorphism-Enabled Features}
 \label{sec:t1}
 
+The first thrust of this work will design new features for choreographic languages
+that rely on first-class process polymorphism and
+are needed to substantially broaden the range of possible choreographic applications.
+
+\subsubsection{Spawning New Locations}
+
+The first feature is the ability to spawn and kill new locations---computational units representing threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+a core feature of many concurrent systems.
+A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
+but those works lacked critical features for realistic programming, like higher-order operations,
+and required locations to be spawned only to execute specific pre-defined operations.
+
+We propose a much more general structure, where there is little distinction between an existing location and a newly-spawned one,
+and threads may be killed when they are no longer needed.
+Moreover, we will integrate this dynamic location management with a host of modern choreographic advances,
+including higher-order functions and process polymorphism.
+
+\ethan{There are multiple problems to consider here.
+\begin{enumerate}[nosep]
+  \item How does the new location know what code to execute?
+  \item If you kill a location, how do you make sure you don't reference it again?
+    This comes in two different forms: regular instructions, and killing it twice.
+\end{enumerate}
+We propose two ways of handling this: scoping and linearity.
+We have preliminary work showing how to make scoping work, but it's missing some important features (e.g., thread pools).
+We will finish that and figure out to make linearity work.}
+
+%We propose two complementary approaches to supporting dynamic creation and termination of locations,
+%both of which rely critically on location polymorphism.
+%
+%\paragraph{Preliminary Work: Scoped Threads}
+%Preliminary work by both PIs and PI Cecchetti's student has made substantial progress
+%towards one means
+
+%Accomplishing this goal will make heavy use of location polymorphism.
+%When a new location comes into existence, it is given a name
+%that is then provided to an existing choreographic context.
+%That context can then interact with the new location
 
 %%% Local Variables:
 %%% mode: latex
