@@ -95,6 +95,15 @@
 \titleformat{\subparagraph}[runin]{\bfseries}{}{0pt}{}
 \titlespacing{\subparagraph}{0pt}{*1}{*1}
 
+\makeatletter
+\newcounter{ex@cntr}
+\newenvironment{example}[1]{%
+  \par\vspace{1.5ex plus 0.5ex minus 0.5ex}%
+  \noindent%
+  \addtocounter{ex@cntr}{1}%
+  \textbf{Example \theex@cntr: #1.}\hspace{1ex plus 0.5ex minus 0.5ex}\ignorespaces%
+}{\par\medskip}
+\makeatother
 
 %\renewcommand{\textfraction}{0.01}
 %\setcounter{topnumber}{100}

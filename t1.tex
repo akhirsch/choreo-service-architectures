@@ -9,6 +9,7 @@ that rely on first-class process polymorphism and
 are needed to substantially broaden the range of possible choreographic applications.
 
 \subsubsection{Spawning New Locations}
+\label{sec:spawning}
 
 The first feature is the ability to spawn and kill new locations---computational units representing threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
 a core feature of many concurrent systems.
@@ -20,6 +21,54 @@ We propose a much more general structure, where there is little distinction betw
 and threads may be killed when they are no longer needed.
 Moreover, we will integrate this dynamic location management with a host of modern choreographic advances,
 including higher-order functions and process polymorphism.
+
+\begin{example}{Dynamic Thread Pool}
+Many systems incorporate thread pools that dynamically resize based on demand.
+That is, at high-demand times when requests are regularly waiting on threads, they spawn more,
+and at low-demand times when threads are regularly sitting idle, excess threads are killed.
+The proposed work would allow us to implement such thread pools as choreographies
+with code akin to the following.
+\[
+  \text{\ethan{Thread pool example code.}}
+\]
+
+The PIs recent work on first-class location polymorphism showed how to
+implement \emph{static} thread pools with a fixed set of threads~\citep{SamuelsonHC25}.
+However, that work assumes the set of threads in the entire system is fixed,
+inherently preventing dynamically resizing the thread pool.
+\end{example}
+
+Safely spawning and killing locations in a choreography---be they threads, processes, or entire nodes---poses three distinct problems,
+all illustrated by the above example.
+\begin{enumerate}
+  \item\label{spawn:li:name}
+    Existing locations must be made aware of the new one in a way that allows them to interact with it.
+    Otherwise the new location cannot send or receive messages, meaning they cannot participate in the choreography in any meaningful way.
+
+    \textit{Example:} Clients of newly-spawned threads must know where to send their jobs.
+  \item\label{spawn:li:code}
+    The new location must know what code to execute, and it must match the code existing nodes expect.
+    Without the correct code, the new location and existing locations might not have matching message sends and receives, causing deadlock.
+
+    \textit{Example:} New threads must know to wait for instructions from a client and execute them
+    and reply with the result, or the client will deadlock.
+  \item\label{spawn:li:kill}
+    If a location is killed, living locations must know not to send to or receive from the terminated location.
+    A retained reference to a dead name can result in a live location attempting to contact a dead one, producing deadlock.
+
+    \textit{Example:} The pool manager and clients must properly discard all references to a killed thread.
+\end{enumerate}
+
+The first concern is solved immediately by first-class location polymorphism.
+Upon spawning a new thread, we give it a new name and bind that name to a location variable.
+That location now functions just as any other polymorphic location variable;
+it can be transmitted across the network or used as an endpoint for sending and receiving messages.
+
+Problems~\ref{spawn:li:code} and~\ref{spawn:li:kill}---both of which can cause deadlock if not properly addressed---require additional research.
+We propose two complementary strategies to addressing these concerns and retaining deadlock freedom with spawned locations:
+scoped locations, and fractional permission tracking.
+
+\paragraph{Preliminary Work: Scoped Locations}
 
 \ethan{There are multiple problems to consider here.
 \begin{enumerate}[nosep]
@@ -42,6 +91,14 @@ We will finish that and figure out to make linearity work.}
 %When a new location comes into existence, it is given a name
 %that is then provided to an existing choreographic context.
 %That context can then interact with the new location
+
+\subsection{Message Multi-Receives}
+\label{sec:multi-receive}
+
+\subsection{Events}
+\label{sec:events}
+
+\ethan{Andrew, I think I might need to leave this one to you.}
 
 %%% Local Variables:
 %%% mode: latex
