@@ -1,6 +1,68 @@
 %thrust2
-\subsection{Thrust 2 - }
+\subsection{Thrust 2 - Improved Compilation for Process Polymorphism}
 \label{sec:t2}
+
+\begin{outline}{Thrust 2 Outline}
+\item Current status of Process Polymorphism
+  \begin{lvl}
+  \item Trick in EPP: Autognosis
+    \begin{lvl}
+    \item Every process knows its own identity
+    \end{lvl}
+  \item Formalized as $\textsf{AmI}\in?$
+    \begin{lvl}
+    \item Branches depending on whether the current process is in some set
+    \end{lvl}
+  \item Current state of the art: \emph{every} process-polymorphic function introduces $\textsf{AmI}\in?$ everywhere.
+  \end{lvl}
+\item Critique
+  \begin{lvl}
+  \item Every process-polymorphic function has its code doubled
+    \begin{lvl}
+    \item Can lead to expondential blowup of code size
+    \item Linear cost to performance
+    \end{lvl}
+  \item This seems to be inherent for worst-case
+    \begin{lvl}
+    \item Random paths example
+    \end{lvl}
+  \item Often, it is unnecessary
+  \end{lvl}
+\item Goal: Cheap Process Polymorphism
+  \begin{lvl}
+  \item Static analyis
+    \begin{lvl}
+    \item Must
+    \item Might
+    \end{lvl}
+  \item Switch-case $\textsf{AmI}\mathord{\in}\textsf{?}$
+    \begin{lvl}
+    \item Make statically-known disjoint sets flat
+    \item Do they need to be disjoint?
+      \begin{lvl}
+      \item First-match semantics
+      \end{lvl}
+    \end{lvl}
+  \end{lvl}
+\item Experimental Verification of Efficiency Gains
+  \begin{lvl}
+  \item Goal: Develop benchmarks for process polymorphic EPP
+    \begin{lvl}
+    \item Contains worst-case example
+    \item Contains examples that our techniques can optimize
+    \item Contains ``representative'' examples
+    \end{lvl}
+  \item Goal: Build new EPP into compiler
+    \begin{lvl}
+    \item Undergraduate training
+    \item Prior Work
+    \end{lvl}
+  \item Results of our benchmark
+    \begin{lvl}
+    \item Goal: Experimentally verify our optimizations are useful in practice.
+    \end{lvl}
+  \end{lvl}
+\end{outline}
 
 
 %%% Local Variables:
