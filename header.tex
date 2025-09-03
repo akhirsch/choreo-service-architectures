@@ -154,40 +154,107 @@
 \newcommenter{\ethan}{darkgreen}{Ethan}
 \newcommenter{\akh}{purple}{AKH}
 
+%% === Program Syntax ===
+\newcounter{numlevels}
+\NewDocumentCommand{\newMLP}{sO{l}mO{0}om}{
+  \IfBooleanTF{#1}{
+    \IfValueTF{#5}{
+      \WithSuffix\newcommand#3*[#4][#5]
+    }{
+      \WithSuffix\newcommand#3*[#4]
+    }
+  }{
+    \IfValueTF{#5}{
+      \newcommand{#3}[#4][#5]
+    }{
+      \newcommand{#3}[#4]
+    }
+  }
+  {\ifthenelse{\value{numlevels} > 0}{\begin{array}[t]{@{}#2@{}}}{\begin{array}{#2}}\addtocounter{numlevels}{1}#6\addtocounter{numlevels}{-1}\end{array}}
+}
+\makeatletter
+\def\def@block@inner#1#2#3\_nil{#1 & #2\ifx\relax#3\relax\else \\ \def@block@inner#3\_nil\fi}%
+\newcommand{\typeset@def@block}[2]{\begin{array}[t]{@{}l@{{}#1{}}l@{}}\def@block@inner#2\_nil\end{array}}
+\makeatother
+
+\newcommand{\ty}{\mkern2mu{:}\mkern2mu}
+\newcommand{\proves}{\vdash}
+\newcommand{\nproves}{\nvdash}
+\newcommand{\dom}[1]{\operatorname{dom}({#1})}
+\newcommand{\seq}{\mathrel{;}}
+\newcommand{\sendsto}{\rightsquigarrow}
+
+\definecolor{chorcolor}{HTML}{0053A9}
+\definecolor{localcolor}{HTML}{007C21}
+\definecolor{ntwkcolor}{HTML}{E44223}
+\definecolor{choicecolor}{HTML}{BB7A00}
+\definecolor{loccolor}{HTML}{b51963}
+\newcommand{\ChorCol}[1]{{\color{chorcolor}#1}}
+\newcommand{\LocalCol}[1]{{\color{localcolor}#1}}
+
+\newcommand{\programfont}[1]{\ensuremath{\mathsf{#1}}\xspace}
+\newcommand{\FontChoreo}[1]{\programfont{\ChorCol{#1}}}
+\newcommand{\LocalLangFont}[1]{\programfont{\LocalCol{#1}}}
+\newcommand{\LocFont}[1]{\programfont{\color{loccolor}#1}}
+
+\newcommand{\Mngr}{\LocFont{M}}
+\newcommand{\Alice}{\LocFont{A}}
+\newcommand{\Bob}{\LocFont{B}}
+\newcommand{\Client}{\LocFont{C}}
+
+\newcommand{\ChorDef}{\mathrel{\ChorCol{\coloneqq}}}
+\newcommand{\ColSend}{\mathrel{\ChorCol{\sendsto}}}
+
+\newcommand{\ForkN}{\FontChoreo{fork}}
+\newcommand{\LetN}{\FontChoreo{let}}
+\newcommand{\In}{\FontChoreo{in}}
+\newcommand{\FunN}{\FontChoreo{fun}}
+\newcommand{\LamN}{\ChorCol{\lambda}}
+
+\newcommand{\ForkIn}[3]{{#1}.\ForkN~{#2}~\In~{#3}}
+\newMLP*{\ForkIn}[3]{{#1}.\ForkN~{#2} \\ \In~{#3}}
+\newcommand{\LetIn}[3]{\LetN~{#1} \ChorDef {#2}~\In~{#3}}
+\newMLP*[r@{~}l]{\LetIn}[3]{\LetN & {#1} \ChorDef {#2} \\ \In & {#3}}
+\makeatletter
+\newMLP{\LetMany}[2]{\LetN ~ {\typeset@def@block{\ChorDef}{#1}} \\ \In ~ {#2}}
+\makeatother
+\newcommand{\Fun}[3]{\operatorname{\FunN}{#1}({#2}) \ChorDef {#3}}
+\newMLP*{\Fun}[3]{\operatorname{\FunN}{#1}({#2}) \ChorDef \\ {#3}}
+
 % === Outline structure ===
 \usepackage{boxedminipage}
 \makeatletter
 \newcounter{outline@templateDepth}
 \newcounter{outline@depth}
 \newenvironment{outline}[2][0]{%
-  \newlist{lvl}{enumerate}{6}
-  \setlist[lvl]{parsep=0.33\baselineskip,itemsep=0pt,topsep=0pt,leftmargin=1.5em}
-  \setlist[lvl,1]{leftmargin=*,topsep=0.5em}
+  \newlist{lvl}{enumerate}{6}%
+  \setlist[lvl]{parsep=0.33\baselineskip,itemsep=0pt,topsep=0pt,leftmargin=1.5em}%
+  \setlist[lvl,1]{leftmargin=*,topsep=0.5em}%
   %
-  \setcounter{outline@templateDepth}{#1}
-  \setcounter{outline@depth}{1}
+  \setcounter{outline@templateDepth}{#1}%
+  \setcounter{outline@depth}{1}%
   \@whilenum\value{outline@templateDepth}<6\do{%
     \ifcase\value{outline@templateDepth}\relax
-      \setlist*[lvl,\value{outline@depth}]{label=\Roman*.}
+      \setlist*[lvl,\value{outline@depth}]{label=\Roman*.}%
     \or
-      \setlist*[lvl,\value{outline@depth}]{label=\Alph*.}
+      \setlist*[lvl,\value{outline@depth}]{label=\Alph*.}%
     \or
-      \setlist*[lvl,\value{outline@depth}]{label=\arabic*.}
+      \setlist*[lvl,\value{outline@depth}]{label=\arabic*.}%
     \or
-      \setlist*[lvl,\value{outline@depth}]{label=\alph*.}
+      \setlist*[lvl,\value{outline@depth}]{label=\alph*.}%
     \or
-      \setlist*[lvl,\value{outline@depth}]{label=\roman*.}
+      \setlist*[lvl,\value{outline@depth}]{label=\roman*.}%
     \or
-      \setlist*[lvl,\value{outline@depth}]{label=-}
+      \setlist*[lvl,\value{outline@depth}]{label=-}%
     \fi
-    \stepcounter{outline@depth}
-    \stepcounter{outline@templateDepth}
+    \stepcounter{outline@depth}%
+    \stepcounter{outline@templateDepth}%
   }
   \if\relax\detokenize{#2}\relax\else
-    {\bfseries #2\par}
+    \par\noindent{\bfseries #2}\par%
   \fi
   \noindent%
-  \begin{lvl}
+  \begin{lvl}%
 }{\end{lvl}\vspace{0.25em}}
 \newenvironment{boxedoutline}[2][0]{
   \begin{boxedminipage}{\textwidth}

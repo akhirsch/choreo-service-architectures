@@ -69,16 +69,65 @@ We propose two complementary strategies to addressing these concerns and retaini
 scoped locations, and fractional permission tracking.
 
 \paragraph{Preliminary Work: Scoped Locations}
+Preliminary work conducted by both PIs and PI Cecchetti's graduate student
+has shown that confining the lifetime of spawned locations to a syntactic scope in the choreography is a viable approach.
+In the thread pool example, if there are too many requests, the pool manager could easily spawn a new thread
+to process an individual request and that thread would automatically die after processing is complete.
+The code for this case might look as follows where~$F$ is a local thunk provided by the client~$\Client$
+specifying the computation to run.
+\[
+  \addtocounter{numlevels}{1}
+  \ForkIn{\Mngr}{T \ColSend \Client}{%
+    \LetMany{{T.f}{F \ColSend W}{\Client.\mathit{res}}{T.(f~()) \ColSend \Client}}
+            {\Client.\mathit{res}}
+  }
+  \addtocounter{numlevels}{-1}
+\]
+This code specifies that the pool manager~$\Mngr$ forks a new thread,
+binds the name of that thread to~$T$, and sends it to the client~$\Client$.
+The client then sends its job to the thread who runs it and passes the result back to the client.
 
-\ethan{There are multiple problems to consider here.
-\begin{enumerate}[nosep]
-  \item How does the new location know what code to execute?
-  \item If you kill a location, how do you make sure you don't reference it again?
-    This comes in two different forms: regular instructions, and killing it twice.
-\end{enumerate}
-We propose two ways of handling this: scoping and linearity.
-We have preliminary work showing how to make scoping work, but it's missing some important features (e.g., thread pools).
-We will finish that and figure out to make linearity work.}
+Scoping the lifetime of~$T$ makes it very easy to know what code it needs:
+the $T$-projection of the body of the~\ForkN block.
+Ensuring that~$T$ is only referenced while it is alive is more complicated.
+While the scoping provides a syntactic boundary for when such a reference is safe,
+it does not automatically guarantee that no thread can attempt to reference~$T$ after it dies.
+Consider the following choreography that forks a process and returns a function closing over its name: $\ForkIn{\Alice}{T}{\LamN \_\ldotp \Alice.42 \ColSend T}$.
+This function, if applied, would immediately cause deadlock, as~\Alice attempts to send~$42$ to a thread that is no longer alive.
+
+Instead, our preliminary work indicates that we can resolve this dilemma by tracking the locations involved in a function
+and verifying that any function returned from a~\ForkN block does not reference the spawned location.
+Specifically, augmenting function types with the set of locations needed to compute the function
+allows the typing rule for~\ForkN to verify that those locations are all in scope---and thus alive---outside the~\ForkN block.
+
+As part of the proposed work, we will complete this preliminary work, including providing a proof deadlock freedom
+and a variety of practical examples.
+
+%\ethan{%
+%\begin{outline}{Scoped Locations}
+%  \item Lifetime of new location defined by syntactic scope of \ForkN.
+%  \item Makes clear what code to send to the new location (everything in the scope where it is alive).
+%  \item Clear boundary for where the location can be referenced.
+%  \item Still need to stop spawned location names from leaking out of the scope (e.g., inside closures).
+%    \begin{lvl}
+%      \item Track who is involved in the types.
+%      \item Involved-location check of return types at the scope boundary.
+%    \end{lvl}
+%\end{outline}
+%}
+
+\paragraph{Fractional Permission Tracking}
+\ethan{Need to cite existing systems using fractional ownership types.}
+
+%\ethan{There are multiple problems to consider here.
+%\begin{enumerate}[nosep]
+%  \item How does the new location know what code to execute?
+%  \item If you kill a location, how do you make sure you don't reference it again?
+%    This comes in two different forms: regular instructions, and killing it twice.
+%\end{enumerate}
+%We propose two ways of handling this: scoping and linearity.
+%We have preliminary work showing how to make scoping work, but it's missing some important features (e.g., thread pools).
+%We will finish that and figure out to make linearity work.}
 
 %We propose two complementary approaches to supporting dynamic creation and termination of locations,
 %both of which rely critically on location polymorphism.
