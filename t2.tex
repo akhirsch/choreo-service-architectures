@@ -2,6 +2,12 @@
 \subsection{Thrust 2 - Improved Compilation for Process Polymorphism}
 \label{sec:t2}
 
+\newcommand{\AmIinName}{\ensuremath{\textsf{AmI}\mathord{\in}}}
+\newcommand{\AmIin}[3]{\ensuremath{\AmIinName\mkern5mu#1 \mathop{\textsf{?}} #2 \mathop{\textsf{:}} #3}}
+\newcommand{\AmIName}{\textsf{AmI}}
+\newcommand{\AmI}[3]{\ensuremath{\AmIName\mkern5mu#1 \mathop{\textsf{?}} #2 \mathop{\textsf{:}} #3}}
+
+\iffalse
 \begin{outline}{Thrust 2 Outline}
 \item Current status of Process Polymorphism
   \begin{lvl}
@@ -9,11 +15,11 @@
     \begin{lvl}
     \item Every process knows its own identity
     \end{lvl}
-  \item Formalized as $\textsf{AmI}\in?$
+  \item Formalized as $\AmIinName$
     \begin{lvl}
     \item Branches depending on whether the current process is in some set
     \end{lvl}
-  \item Current state of the art: \emph{every} process-polymorphic function introduces $\textsf{AmI}\in?$ everywhere.
+  \item Current state of the art: \emph{every} process-polymorphic function introduces $\AmIinName$ everywhere.
   \end{lvl}
 \item Critique
   \begin{lvl}
@@ -63,7 +69,115 @@
     \end{lvl}
   \end{lvl}
 \end{outline}
+\fi
 
+As mentioned above, choreographic programs are realized through an operation known as \emph{endpoint projection (EPP)}, which extracts a program for each participant in the system.
+In order to implement process polymorphism, EPP relies on the principle of \emph{autognosis}: every participant knows their own identity.
+This is formalized in the network language via a primitive $\AmIName$ operation, which allows a program to branch whether the participant running the program is some particular operator.
+We write $\AmI{n}{C_1}{C_2}$ to mean ``if the current program is being run by a participant with name $n$, then run $C_1$; otherwise, run $C_2$.''
+(This can be generalized to a $\AmIinName$ operation, which tests whether the running program's name is in some set.)
+
+In current choreographic theory, \emph{every} process-polymorphic function starts with as many $\AmIName$/$\AmIinName$ operations as there are process parameters.
+This means that there is a potentially exponential blowup in the size of the function---in particular, a process-polymorphic function has $2^p$ branches, where $p$ is the number of process parameters.
+Moreover, these branches have a (small) cost at runtime, leading to a linear performance cost.
+
+In the worst case, it seems we cannot do better than this exponential code size/linear performance cost.
+For instance, consider the following pseudocode:
+$$
+\begin{array}{l}
+  \rho_1, \rho_2 := \textsf{randomSplit}(\{A,B,C,D\});\\
+  \textsf{function}~\textsf{weird}(X,Y) :=\\
+  \begin{array}[t]{l}
+    (X.1, Y.2)
+  \end{array}\\
+  \textsf{if}~\textsf{flip}()\mathrel{\textsf{then}}\textsf{weird}(\rho_1, \rho_2)\mathrel{\textsf{else}}\textsf{weird}(\rho_2, \rho_1)
+\end{array}
+$$
+This program randomly splits the set of participants $\{A, B, C, D\}$ into two dynamic sets, $\rho_1$ and $\rho_2$, potentially with overlap.
+It then randomly chooses one of these two dynamic sets to get the value $1$, while the other gets the value $2$.
+Since any participant could end up in either $\rho_1$ or $\rho_2$ independently, and which set they are in is only determined at runtime, each participant must have four code paths: one where they are only in $\rho_1$, one where they are only in $\rho_2$, one where they are in both, and one where they are in neither.
+
+While this means that there are times when the current (na\"ive) solution is optimal, it may not always be.
+In fact, relatively common use cases of process polymorphism only select between a few possible inputs.
+We can see this already in the \textsf{weird} example above: a process $E$ which is not any of $A$, $B$, $C$, or $D$ does \emph{not} need multiple code paths, since we statically know that $E$ cannot be in either $\rho_1$ or $\rho_2$.
+This leads to the following goal:
+\begin{goal}
+  Create a cheap version of endpoint projection, which allows for smaller program sizes and performance cost in common cases.
+\end{goal}
+
+In order to achieve this goal, we will need to employ static analysis to determine which participants a name might represent and which participants might be in a set.
+In the case of the example above, we know that only the four participants $A$, $B$, $C$, and $D$ could possibly be in $\rho_1$ and $\rho_2$.
+Moreover, since \textsf{weird} is only called with $\rho_1$ and $\rho_2$ as arguments, $X$ and $Y$ have the same restrictions.
+(Note that this requires knowledge about the entire scope of \textsf{weird}: without that knowledge, $X$ and $Y$ could include any participant.)
+Several static analysis methods in the literature seem to be able to give us the information required for this optimization.
+In particular, abstract interpretation and type-and-effect systems both seem to be plausible candidates.
+We plan to investigate both as possibilities.
+Once we have the information about who \emph{could} be represented by a name/set of names, we can then use that during projection to only project \AmIName{} instructions when necessary.
+This will prevent code blowup in many cases, as well as linear costs that do not need to be paid.
+
+Even when we do need an \AmIName{} instruction, however, we may be able to do better by allowing multi-way \AmIName{} expressions analogous to \textsf{switch} statements vis-a-vis \textsf{if} statements.
+For instance, in the \textsf{weird} example above, we could project the body of weird to code similar to the following pseudocode:
+$$
+\begin{array}{l}
+  \AmIinName\\
+  |\mkern2muX \cap Y \Rightarrow (1, 2);\\
+  |\mkern2muX \Rightarrow 1;\\
+  |\mkern2muY \Rightarrow 2;\\
+  |\mkern2mu\_ \Rightarrow (\,)
+\end{array}
+$$
+With the appropriate representation of sets, this becomes a single instruction rather than multiple instructions.
+We plan to not only introduce this \textsf{switch}-like version of \AmIName{}, but to determine where and how compiling to such an instruction would be profitable.
+
+Finally, a common pattern when defining recursive process-polymorphic functions has the same processes at every recursive call.
+For instance, consider the following pseudocode, which takes a tree that contains $A$'s data and returns a tree that contains that same data at $B$, with $A$ sending all of the data to $B$ one at a time:
+$$
+\begin{array}{l}
+  \textsf{function}~\textsf{tree\_send} (A, B, t) :=\\
+  \begin{array}[t]{l}
+    \textsf{match}~t~\textsf{with}\\
+    |\mkern2mu\textsf{Leaf} \Rightarrow \textsf{Leaf}\\
+    |\mkern2mu\textsf{Branch}(\ell, A.x, r) \Rightarrow \textsf{Branch}(\textsf{tree\_send}(A, B, \ell), A.x \rightsquigarrow B, \textsf{tree\_send}(A,B,r))
+  \end{array}
+\end{array}
+$$
+Note that every recursive call to \textsf{tree\_send} has the same process parameters as the original call.
+EPP must insert a \AmIName{} instruction at the beginning of the function.
+Na\"ively, this requires that the relevant processes incur a cost at every recursive call.
+However, because the participants never change in this loop, we can instead remove this \AmIName{} instruction from the beginning of the recursive calls.
+To do so, we compile the function to multiple different recursive functions depending on whether the current process is one of the parameters.
+The main body of the function, then, simply selects which version of the function to run.
+This again leads to an exponential blowup in code size, though the static analysis described above should also prevent that blowup in common cases.
+
+For each of these three optimizations, we plan to prove that the resulting version of EPP is deadlock free.
+The code-size and performance savings, however, will usually be common-case, rather than worst case.
+We therefore plan to validate these metrics empirically.
+In order to do so, we need a benchmark for process-polymorphic EPP and an implementation of our optimizations.
+
+\begin{goal}
+  Develop a benchmark suite for process-polymorphic EPP.
+\end{goal}
+
+We plan to develop a benchmark of programs that make use of process polymorphism in order to validate choreographic compilers.
+In particular, we plan to include in our benchmarks the worst-case example sketched above as well as programs designed to be amenable to optimization.
+We would like the bulk of the benchmark to be ``representative'' examples of process-polymorphic code.
+Since process polymorphism is so new, this would require creating a large repository of process-polymorphic code in order to discover how it is used in practice.
+
+\begin{goal}
+  Implement an optimizing version of process-polymorphic EPP.
+  Use it to experimentally validate our optimizations.
+\end{goal}
+
+PI~Hirsch has preliminary work in the form of a compiler for a functional choreographic programming language.
+This compiler has been built in no small part by a team of undergraduate students participating in SUNY~Buffalo's \emph{Experiential Learning and Research~(ELR)} program.
+This program allows students to complete a significant portion of their degree by participating in small teams under a professor's (or industrial ``client's'') direction on a long-term project for three semesters.
+PI~Hirsch's team has recently graduated its first group of students, and currently has students on their first and second semesters.
+They design and develop the compiler under the direction of PI~Hirsch and his team of graduate students.
+
+We plan to develop the compiler by adding in process polymorphism in both the optimized and the unoptimized form.
+This will be performed by a combination of graduate and undergraduate students.
+Moreover, the undergraduate students will implement the benchmark suite of process-polymorphic programs described above.
+This will not only allow us to experimentally verify our optimizations, but also (further) train undergraduate students in compiler design, functional programming, and experimental practice.
 
 %%% Local Variables:
 %%% mode: latex
