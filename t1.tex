@@ -103,6 +103,8 @@ allows the typing rule for~\ForkN to verify that those locations are all in scop
 As part of the proposed work, we will complete this preliminary work, including providing a proof deadlock freedom
 and a variety of practical examples.
 
+\ethan{Do we need a goal here? It really feels like ``just write the paper we submitted to POPL.''}
+
 %\ethan{%
 %\begin{outline}{Scoped Locations}
 %  \item Lifetime of new location defined by syntactic scope of \ForkN.
@@ -117,7 +119,33 @@ and a variety of practical examples.
 %}
 
 \paragraph{Fractional Permission Tracking}
-\ethan{Need to cite existing systems using fractional ownership types.}
+The scoped-based process forking described above allows for any application that spawns new locations to handle individual tasks.
+While many such applications exist---making it a powerful addition to the choreographic toolbox---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+some systems require dynamic locations with indefinite lifetimes.
+For example, the thread pool may not wish to spawn additional threads only for a single task,
+but instead simply increase the pool capacity when demand is high
+and be willing to kill any thread that happens to be idle when demand is low.
+
+To support this more flexible mode of dynamic locations, we propose a second, complementary approach to
+ensuring terminated threads do are not referenced---and thus do not cause deadlock.
+Specifically, we propose tracking fractional permission in the type system~\todo{cite relevant stuff}.
+
+\ethan{Things we need to discuss:
+\begin{outline}{}
+  \item What is fractional permission tracking?
+  \item How is it used?
+    \begin{lvl}
+      \item Referencing location needs non-zero permission
+      \item Killing location consumes full permission
+      \item Connects to scoped locations by tracking permissions used in function types
+    \end{lvl}
+  \item How do we know what code to give a new location?
+    \begin{lvl}
+      \item This is a core research question of this sub-thrust
+      \item Might tie into wait-until-called stuff in Thrust 3?
+        If we give it wait-until-called code, it's obvious what it needs to do and how to use it.
+    \end{lvl}
+\end{outline}}
 
 %\ethan{There are multiple problems to consider here.
 %\begin{enumerate}[nosep]
@@ -128,18 +156,6 @@ and a variety of practical examples.
 %We propose two ways of handling this: scoping and linearity.
 %We have preliminary work showing how to make scoping work, but it's missing some important features (e.g., thread pools).
 %We will finish that and figure out to make linearity work.}
-
-%We propose two complementary approaches to supporting dynamic creation and termination of locations,
-%both of which rely critically on location polymorphism.
-%
-%\paragraph{Preliminary Work: Scoped Threads}
-%Preliminary work by both PIs and PI Cecchetti's student has made substantial progress
-%towards one means
-
-%Accomplishing this goal will make heavy use of location polymorphism.
-%When a new location comes into existence, it is given a name
-%that is then provided to an existing choreographic context.
-%That context can then interact with the new location
 
 \subsection{Message Multi-Receives}
 \label{sec:multi-receive}

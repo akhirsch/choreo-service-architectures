@@ -154,6 +154,8 @@
 \newcommenter{\ethan}{darkgreen}{Ethan}
 \newcommenter{\akh}{purple}{AKH}
 
+\newcommand{\todo}[1]{\bgroup\small\sffamily\color{red}[\textbf{Todo:} #1]\egroup}
+
 %% === Program Syntax ===
 \newcounter{numlevels}
 \NewDocumentCommand{\newMLP}{sO{l}mO{0}om}{
@@ -205,11 +207,15 @@
 \newcommand{\ChorDef}{\mathrel{\ChorCol{\coloneqq}}}
 \newcommand{\ColSend}{\mathrel{\ChorCol{\sendsto}}}
 
+\newcommand{\IfN}{\FontChoreo{if}}
+\newcommand{\Then}{\FontChoreo{then}}
+\newcommand{\Else}{\FontChoreo{else}}
 \newcommand{\ForkN}{\FontChoreo{fork}}
 \newcommand{\LetN}{\FontChoreo{let}}
 \newcommand{\In}{\FontChoreo{in}}
 \newcommand{\FunN}{\FontChoreo{fun}}
 \newcommand{\LamN}{\ChorCol{\lambda}}
+\newcommand{\TLamN}{\ChorCol{\Lambda}}
 
 \newcommand{\ForkIn}[3]{{#1}.\ForkN~{#2}~\In~{#3}}
 \newMLP*{\ForkIn}[3]{{#1}.\ForkN~{#2} \\ \In~{#3}}
@@ -220,6 +226,8 @@
 \makeatother
 \newcommand{\Fun}[3]{\operatorname{\FunN}{#1}({#2}) \ChorDef {#3}}
 \newMLP*{\Fun}[3]{\operatorname{\FunN}{#1}({#2}) \ChorDef \\ {#3}}
+\newcommand{\ITE}[3]{\IfN~{#1}~\Then~{#2}~\Else~{#3}}
+\newMLP*{\ITE}[3]{\IfN~{#1} \\ \Then~{#2} \\ \Else~{#3}}
 
 % === Outline structure ===
 \usepackage{boxedminipage}
