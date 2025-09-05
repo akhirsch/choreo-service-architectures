@@ -2,6 +2,45 @@
 \subsection{Thrust 3 - }
 \label{sec:t3}
 
+\vspace*{0.5em}
+\hrule
+\vspace*{0.5em}
+
+\ethan{Here's some text to build off of that I put into my grant insurance application}
+
+This work aims to address this shortcoming and develop the theory required to support service architectures in choreographic programming.
+In particular, it aims to address two core research questions in tandem.
+
+(1) How can we represent services in choreographic programs?
+
+The assumption that senders and receivers know each other's identities before messages are sent
+is embedded into the structure and syntax of existing choreographic languages.
+To ensure message sends and receives match up, and thus avoid deadlock,
+choreographic languages do not have separate send and receive instructions,
+but rather a single combined instruction that must specify the sender, recipient, and information being sent.
+This structure does not support the kind of client-server service architecture described above.
+
+We will therefore develop new language structures to specify these architectures within choreographies.
+They will include sending messages, but without the structural requirements of existing languages.
+Instead, the program for a server will only specify that it is waiting for a message from any client,
+while clients will be allowed to send requests to servers without identifying themselves in advance.
+
+(2) How do we formally define and enforce deadlock freedom with choreographic services?
+
+Being able to represent services in a choreographic language is not sufficient to realize the promise of choreographic programming.
+We also need to be able to analyze the behavior of the programs and continue to guarantee deadlock freedom.
+However, existing formal mathematical definitions of deadlock freedom require that,
+if the system cannot continue executing, then every component must have terminated.
+With services, however, this is not the case.
+A service waiting for a request when all potential clients have terminated is not itself terminated, but is also not deadlocked.
+This work aims to resolve this discrepancy.
+It will identify an appropriate definition of deadlock freedom and structure
+the choreographic service representation to enforce this new, more general notion.
+
+\vspace*{0.5em}
+\hrule
+\vspace*{0.5em}
+
 
 
 %%% Local Variables:
