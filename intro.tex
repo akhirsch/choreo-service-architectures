@@ -4,6 +4,7 @@
 \section{Introduction}
 \label{sec:intro}
 
+\iffalse
 \begin{outline}{Introduction Outline}
   \item Programming concurrent and distributed systems correctly is hard, but choreographies can help!
     \begin{lvl}
@@ -97,44 +98,32 @@ If we do this, we may want to change the name of the grant to something like ``E
 \vspace{0.5em}
 \hrule
 \vspace{0.5em}
+\fi
 
 Nearly every major computer system now relies on substantial concurrency for performance and scalability,
 yet designing and implementing correct concurrent systems is famously challenging.
 The new paradigm of \emph{choreographic programming}~\citep{Montesi13,Montesi23} offers to simplify development and analysis of such systems.
-Instead of writing separate programs for each thread, process, or node, within a system---forcing developers to analyze the complex interplay of these programs---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+Instead of writing separate programs for each thread, process, or node, within a system---forcing developers to analyze the interplay of these programs---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
 choreographies mirror more informal protocol specifications with a single top-level program
 describing both the local operations of each piece of the system and how they interact.
 
 The promise of choreographic programming is twofold.
 First, the implementation of a protocol can directly mirror its specification.
+For instance, we might have a protocol similar to ``Alice sends a message to Bob, who forwards it to Cathy.''
+In choreographic programming, we would be able to write $(\text{Alice}.m \rightsquigarrow \text{Bob}) \rightsquigarrow \text{Cathy}$.
+Contrast this with traditional programming techniques, which would require writing Alice's code, Bob's code, and Cathy's code separately.
+In the choreographic paradigm, this separate code is recovered automatically by a compiler.
 %with one program describing the behaviors and interactions of every part of the system.
-\ethan{I think a small example here would be useful.}
-Second, by combining different programs, global control flows become more visible
-and drastically simplify analysis of important properties like deadlock freedom~\citep{CarboneM13}.
+% \ethan{I think a small example here would be useful.}
+Second, the existence of a global program makes  global control flows more visible.
+This not only provides deadlock freedom by construction~\cite{CarboneM13}, but also drastically simplifies the other program analyses.
 In this way, choreographies aim to simply system building, help with rapid prototyping,
 and simplify both checking that the implementation matches the specification
 and analyzing important system properties.
 Rapid progress in choreography theory in the past few years~\citep[e.g.,][]{HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}
 has brought this promise closer into view, but substantial work remains.
-
-%\akh{This feels weak.
-%  In particular, I can imagine exactly this intro as a reasonable POPL/OOPSLA paper.
-%  We want to demonstrate that this is worth 3-6 of those papers!
-%}
-%\akh{This also has a seperability problem: right now, this reads as ``we need to solve all of these problems for any of them to be worth it.''
-%  We instead want to say ``solving any one of these problems will be helpful, but solving them together is synergistic.''
-%}
-
-Notably, a recent result by the PIs showing how to safely enable first-class location polymorphism~\citep{SamuelsonHC25} opens critical new avenues for research.
-Choreographies can now dynamically compute and communicate which location(s) will perform any given action,
-allowing run-time flexibility and increased code reuse.
-On its own, this result is an important addition to the choreographic toolbox,
-but its real power lies in creating a foundation to accelerate advances in choreographic technology.
-
-We propose to \emph{leverage process polymorphism to develop substantial new theory to realize the promise of the choreographic programming paradigm}.
-Guiding this work will be the goal of enabling choreographies to specify common concurrent and distributed systems as choreographies.
-Existing choreographic theory relies on three extremely strong assumptions
-that each rule out many of these common architectures, including thread pools, consensus protocols, and client-server models like web servers or microservice architectures.
+In particular, most existing choreographic theory relies on three extremely strong assumptions
+that each rule out many common architectures, including thread pools, consensus protocols, and client-server models like web servers or microservice architectures:
 \begin{enumerate}
   \item\label{li:assume:static-locs}
     There must be a pre-determined set of locations.
@@ -143,108 +132,65 @@ that each rule out many of these common architectures, including thread pools, c
   \item\label{li:assume:known-endpoints}
     The senders and recipients of each message must be know to all relevant parties in advance.
 \end{enumerate}
+
+A recent result by both PIs showing how to safely enable first-class location polymorphism~\citep{SamuelsonHC25} opens critical new avenues for research alleviating those assumptions.
+Choreographies can now dynamically compute and communicate which location(s) will perform any given action,
+allowing run-time flexibility and increased code reuse.
+On its own, this result is an important addition to the choreographic toolbox,
+but its real power lies in creating a foundation to accelerate advances in choreographic technology.
+
+\textbf{We propose to leverage process polymorphism to develop substantial new theory and implementation techniques, bringing the choreographic programming paradigm closer to its promise.}
+Guiding this work will be the goal of enabling choreographies to specify common concurrent and distributed systems as choreographies.
+This is not possible currently, as many systems violate the assumptions above:
 Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
 Microserves must wait for requests without knowing when or if they will arrive, violating assumption~(\ref{li:assume:known-order}).
 Finally, consensus nodes may simultaneously wait for messages from many senders
 and only learn who sent valid messages after they arrive,
 violating assumption~(\ref{li:assume:known-endpoints}).
 
-Importantly, these assumptions are not fundamental to choreographies,
-but rather constraints needed to enforce deadlock freedom in the absence of process polymorphism with first-class location names.
-A newly spawned thread must have a name that existing computations can refer to.
-When messages can be received out of order or the recipient is unaware of who a message might come from,
-the message must identify its sender, requiring a first-class representation of location names.
-We propose to develop new tools and theory based on our recent work on first-class process polymorphism~\citep{SamuelsonHC25}
-to remove these assumptions and enable choreographic implementations of far more systems.
-
-\ethan{Something here about efficiency and need for new theory like wait-until-called deadlock freedom.}
-
-\ethan{Do we want to add a note about preliminary work to the intro?}
+Notably, the PIs have a longstanding and fruitful collaboration.
+They have worked together not only on process polymorphism~\cite{SamuelsonHC25}, but on information-flow control~\cite{SilverHCHZ23,HirschC21} and authorization logic~\cite{HirschACAT20}.
+They have additionally developed preliminary work for this grant together, as described below; PI~Hirsch has also developed preliminary work in the form of a choreographic compiler (also described below).
 
 \subsection{Intellectual Merit}
 
-We propose to accomplish the above goals through three independent but highly synergistic thrusts.
+In order to alleviate the assumptions listed above and allow choreographic programming to achieve its promise in practical systems, we plan to pursue the following research:
 \begin{itemize}
-  \item \textit{Thrust 1 (Polymorphism-Enabled Features):}
-  \item \textit{Thrust 2 (Improved Compilation for Process Polymorphism):}
-  \item \textit{Thrust 3 (\ethan{Need a good name for the theory thrust}):}
+\item \textit{Thrust 1 (Polymorphism-Enabled Features):}
+\item \textit{Thrust 2 (Improved Compilation for Process Polymorphism):}
+\item \textit{Thrust 3 (Better Guarantees for Process-Polymorphic Programs):}
 \end{itemize}
+  
+In \hyperref[sec:t1]{Thrust 1}, we will develop new features enabled by process polymorphism.
+In particular, we plan to develop the ability to spawn new threads dynamically in a program, allowing them to interact with other choreographic participants in a first-class way.
+We also plan to develop choreographies wherein one participant can wait for any number of other participants to send a message, receiving those messages in any order.
+In particular, we plan to develop a version of this feature that will allow for a programmer to specify exactly what pattern of messages a program must receive before proceeding.
 
+In \hyperref[sec:t2]{Thrust 2}, we will examine how process polymorphism is implemented in more detail.
+In particular, the current theory of process polymorphism tends to require an expensive compilation step which can result in a single process's code being exponentially bigger than the choreographic code.
+We plan to optimize this process in common cases, allowing for smaller and cheaper concurrent code.
+In order to validate this, we also plan to develop a benchmark of process-polymorphic programs, additionally helping speed the development of further process polymorphism technology.
 
-%These assumptions rule out numerous common distributed system structures,
-%including client-server models, like web servers or microservice architectures, thread pools, and consensus protocols, as each violates them in multiple ways.
-%Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
-%These systems all require parties to wait for messages without knowing when or if they will arrive,
-%either from clients, other consensus nodes, or a pool manager, violating assumption~(\ref{li:assume:known-order}).
-%Finally, messages may come from many different senders, and the recipient only learns their identity when the message arrives,
-%violating assumption~(\ref{li:assume:known-endpoints}).
-
-\iffalse
-We propose to design, analyze, and implement new features in choreographic languages that eliminate the need for these assumptions,
-yet still guarantee important properties like deadlock freedom and support simplified programming and analysis.
-\ethan{Advertise developing new theory?}
-These innovations will allow us to build the service-based architectures mentioned above as choreographies.
-
-\subsection{Intellectual Merit}
-We propose to support three new features currently lacking in choreographies.
-\ethan{Should these just be the thrusts?}
-
-\begin{itemize}[leftmargin=*]
-\item \textbf{Spawning Threads:}
-    \akh{Is this \emph{just} our POPL submission? What else needs to be done, and why?}
-
-    The first feature is the ability to spawn and kill new computational units---threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
-    a core feature of many concurrent systems.
-    A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
-    but those works lacked critical features for realistic programming, like higher-order operations,
-    and required threads to be spawned only to execute specific pre-defined operations.
-
-    We propose a much more general structure, where there is little distinction between
-    and existing execution thread and a newly-spawned one and threads may be killed when they are no longer needed.
-    Moreover, we will integrate this dynamic thread management with a host of modern choreographic advances,
-    including higher-order functions and process polymorphism.
-
-  \item \textbf{Wait-Until-Called Paradigm:}
-    The second core feature is to allow choreographic specification of services
-    that process requests when called by any client and then wait for another request.
-    These services cannot be implemented with existing choreographic tools,
-    as they require services to accept messages from many different clients---potentially even unknown ones---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
-    without knowing who will make a request before it arrives.
-
-    In addition to requiring message recipients to only learn the sender's identity when the message arrives,
-    this important paradigm will also require a fundamentally new notion of deadlock freedom.
-    Existing choreographies define deadlock freedom to mean either every location has terminated or some location can execute.
-    With wait-until-called services, however, a service may be safely waiting for a new request when all others have terminated without indicating any problem.
-    We propose to develop new choreographic theory to develop and analyze systems that include such services.
-
-  \item \textbf{Message Multi-Receives:}
-    While existing choreographies allow for multi-sends---broadcast messages with multiple recipients sent in no particular order---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
-    they do not allow \emph{multi-receives}, where one recipient waits on messages from multiple senders without a pre-specified order.
-    We propose to design a general and powerful version of this feature
-    to allow recipients to wait on only a fixed number of messages from a potentially larger number of senders,
-    and know which messages arrived and in which order once the threshold is reached.
-    This is precisely the language primitive needed to implement redundant protocols like distributed consensus
-    that are designed to be robust to failures where messages may not arrive.
-\end{itemize}
-
-Importantly, proper design of each of these features will rely heavily
-on recent work by the PIs on first-class process polymorphism~\citep{SamuelsonHC25}.
-This work shows how to choreographies can support dynamically computation of location names,
-which is critical for writing code that interacts with newly spawned threads
-or receives messages from unknown clients and must respond to them.
-\fi
-
-%\subsection{Motivation ...}
-%\label{sec:motivation}
-
+Finally, in \hyperref[sec:t3]{Thrust 3}, we will explore new, more powerful, guarantees for process-polymorphic programs.
+In particular, we plan to make the deadlock-freedom guarantee provided by choreographies more subtle and more resilient.
+To make the guarantee more subtle, we plan to develop a version of deadlock freedom that allows for some processes to be waiting for an unknown client to contact them.
+Intuitively, a state in which all programs are either done or waiting for a client is not in deadlock; instead, every program did everything it needs to do.
+Current choreographic guarantees would rule this out, however.
+To make the guarantee more resilient, we plan to study how we can provide deadlock-freedom guarantees in the face of nonterminating processes.
+Currently, if a process goes into an infinite loop in a choreography, the choreographic semantics say that no other process takes any actions.
+We plan to make a better, more resilient guarantee by turning to the mathematical theory of the ordinals, which allows us to ``see past'' the infinite loops and make guarantees about other processes.
 
 \subsection{Research Team}
 
-\ethan{We have a longstanding collaboration. Drive that home.}
+As stated above, the PIs have a longstanding and fruitful collaboration.
+They have weekly remote meetings, and visit in person at least annually.
+Moreover, they each bring unique skills to the table which have proven synergistic many times in the past.
 
 \subparagraph{Ethan Cecchetti} is an expert...
 
-\subparagraph{Andrew K. Hirsch} is an expert in choreographic programming...
+\subparagraph{Andrew K. Hirsch} is an expert in the theory of programming languages.
+In particular, he is one of the inventors of functional choreographic programming~\cite{HirschG22} and process polymorphism~\cite{GraversenHM24}, and he has developed considerable expertise in the area~\cite{SamuelsonHC25,GraversenHM24,HirschG22,BohosianH25}.
+He is also an expert in information-flow control~\cite{SilverHCHZ23,MenzHLG23,HirschC21,HirschACAT20}, the theory of effects~\cite{SilverHCHZ23,HirschC21,HirschT18}, and authorization logic~\cite{HirschACAT20,HirschC13}.
 
 %%% Local Variables:
 %%% mode: latex
