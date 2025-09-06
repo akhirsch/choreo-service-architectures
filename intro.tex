@@ -1,7 +1,7 @@
 %!TEX root = desc.tex
 \maketitle
 
-\section{Introduction}
+\section{Project Description}
 \label{sec:intro}
 
 \iffalse
@@ -109,17 +109,17 @@ describing both the local operations of each piece of the system and how they in
 
 The promise of choreographic programming is twofold.
 First, the implementation of a protocol can directly mirror its specification.
-For instance, we might have a protocol similar to ``Alice sends a message to Bob, who forwards it to Cathy.''
-In choreographic programming, we would be able to write $(\text{Alice}.m \rightsquigarrow \text{Bob}) \rightsquigarrow \text{Cathy}$.
-Contrast this with traditional programming techniques, which would require writing Alice's code, Bob's code, and Cathy's code separately.
-In the choreographic paradigm, this separate code is recovered automatically by a compiler.
-%with one program describing the behaviors and interactions of every part of the system.
-% \ethan{I think a small example here would be useful.}
-Second, the existence of a global program makes  global control flows more visible.
-This not only provides deadlock freedom by construction~\cite{CarboneM13}, but also drastically simplifies the other program analyses.
-In this way, choreographies aim to simply system building, help with rapid prototyping,
+For instance, a protocol that includes ``Alice sends message~$m$ to Bob, who forwards it to Cathy''
+could be written as the choreography $(\text{Alice}.m \sendsto \text{Bob}) \sendsto \text{Cathy}$.
+A compiler can then automatically generate three separate pieces of code, one for each of Alice, Bob, and Cathy,
+with separate send and receive instructions.
+Contrast this with traditional programming techniques, which require developers to write the three separate pieces of code directly.
+Second, the existence of a global program makes global control flows more visible.
+This structure not only provides deadlock freedom by construction~\cite{CarboneM13}, but also drastically simplifies the other program analyses.
+In this way, choreographies aim to ease system building, help with rapid prototyping,
 and simplify both checking that the implementation matches the specification
 and analyzing important system properties.
+
 Rapid progress in choreography theory in the past few years~\citep[e.g.,][]{HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}
 has brought this promise closer into view, but substantial work remains.
 In particular, most existing choreographic theory relies on three extremely strong assumptions
@@ -139,12 +139,12 @@ allowing run-time flexibility and increased code reuse.
 On its own, this result is an important addition to the choreographic toolbox,
 but its real power lies in creating a foundation to accelerate advances in choreographic technology.
 
-\textbf{We propose to leverage process polymorphism to develop substantial new theory and implementation techniques, bringing the choreographic programming paradigm closer to its promise.}
+\emph{We propose to leverage location polymorphism to develop substantial new theory and implementation techniques, bringing the choreographic programming paradigm closer to its promise.}
 Guiding this work will be the goal of enabling choreographies to specify common concurrent and distributed systems as choreographies.
-This is not possible currently, as many systems violate the assumptions above:
+This is not possible currently, as many systems violate the assumptions above.
 Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
 Microserves must wait for requests without knowing when or if they will arrive, violating assumption~(\ref{li:assume:known-order}).
-Finally, consensus nodes may simultaneously wait for messages from many senders
+Finally, consensus nodes simultaneously wait for messages from many senders
 and only learn who sent valid messages after they arrive,
 violating assumption~(\ref{li:assume:known-endpoints}).
 
@@ -154,13 +154,16 @@ They have additionally developed preliminary work for this grant together, as de
 
 \subsection{Intellectual Merit}
 
-In order to alleviate the assumptions listed above and allow choreographic programming to achieve its promise in practical systems, we plan to pursue the following research:
+To alleviate the need for the assumptions listed above and allow choreographic programming to achieve its promise in practical systems, we plan to pursue the following research:
 \begin{itemize}
-\item \textit{Thrust 1 (Polymorphism-Enabled Features):}
-\item \textit{Thrust 2 (Improved Compilation for Process Polymorphism):}
-\item \textit{Thrust 3 (Better Guarantees for Process-Polymorphic Programs):}
+  \item \textit{\hyperref[sec:t1]{Thrust 1} (Polymorphism-Enabled Features):}
+  \item \textit{\hyperref[sec:t2]{Thrust 2} (Improved Compilation for Process Polymorphism):}
+  \item \textit{\hyperref[sec:t3]{Thrust 3} (Better Guarantees for Process-Polymorphic Programs):}
 \end{itemize}
-  
+
+\ethan{I'm going to come back to this section and tighten it up once there's a draft of the trusts.
+That way we can make sure it all matches up.}
+
 In \hyperref[sec:t1]{Thrust 1}, we will develop new features enabled by process polymorphism.
 In particular, we plan to develop the ability to spawn new threads dynamically in a program, allowing them to interact with other choreographic participants in a first-class way.
 We also plan to develop choreographies wherein one participant can wait for any number of other participants to send a message, receiving those messages in any order.
