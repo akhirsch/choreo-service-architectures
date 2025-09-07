@@ -191,18 +191,22 @@
 \definecolor{ntwkcolor}{HTML}{E44223}
 \definecolor{choicecolor}{HTML}{BB7A00}
 \definecolor{loccolor}{HTML}{b51963}
-\newcommand{\ChorCol}[1]{{\color{chorcolor}#1}}
 \newcommand{\LocalCol}[1]{{\color{localcolor}#1}}
 
 \newcommand{\programfont}[1]{\ensuremath{\mathsf{#1}}\xspace}
-\newcommand{\FontChoreo}[1]{\programfont{\ChorCol{#1}}}
 \newcommand{\LocalLangFont}[1]{\programfont{\LocalCol{#1}}}
 \newcommand{\LocFont}[1]{\programfont{\color{loccolor}#1}}
 
 \newcommand{\Mngr}{\LocFont{M}}
+\newcommand{\Client}{\LocFont{C}}
 \newcommand{\Alice}{\LocFont{A}}
 \newcommand{\Bob}{\LocFont{B}}
-\newcommand{\Client}{\LocFont{C}}
+\newcommand{\Cathy}{\LocFont{C}}
+\newcommand{\Dave}{\LocFont{D}}
+
+%% Choreographic Syntax
+\newcommand{\ChorCol}[1]{{\color{chorcolor}#1}}
+\newcommand{\FontChoreo}[1]{\programfont{\ChorCol{#1}}}
 
 \newcommand{\ChorDef}{\mathrel{\ChorCol{\coloneqq}}}
 \newcommand{\ColSend}{\mathrel{\ChorCol{\sendsto}}}
@@ -228,6 +232,15 @@
 \newMLP*{\Fun}[3]{\operatorname{\FunN}{#1}({#2}) \ChorDef \\ {#3}}
 \newcommand{\ITE}[3]{\IfN~{#1}~\Then~{#2}~\Else~{#3}}
 \newMLP*{\ITE}[3]{\IfN~{#1} \\ \Then~{#2} \\ \Else~{#3}}
+
+%% Network Syntax
+\newcommand{\NtwkCol}[1]{{\color{ntwkcolor}#1}}
+\newcommand{\NtwkFont}[1]{\ensuremath{\mathtt{\NtwkCol{#1}}}\xspace}
+
+\newcommand{\AmIinN}{\NtwkFont{AmI\mathord{\in}}}
+\newcommand{\AmIin}[3]{\ensuremath{\operatorname{\AmIinN} #1 \mathbin{\NtwkFont{?}} #2 \mathbin{\NtwkFont{:}} #3}}
+\newcommand{\AmIN}{\NtwkFont{AmI}}
+\newcommand{\AmI}[3]{\ensuremath{\operatorname{\AmIN} #1 \mathbin{\NtwkFont{?}} #2 \mathbin{\NtwkFont{:}} #3}}
 
 % === Outline structure ===
 \usepackage{boxedminipage}
