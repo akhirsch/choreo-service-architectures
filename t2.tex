@@ -74,7 +74,7 @@ In this thrust, we propose to address both missing pieces.
 
 As mentioned above, choreographic programs are compiled through an operation known as \emph{endpoint projection~(EPP)}, which extracts a program for each participant in the system.
 To implement process polymorphism, EPP relies on the principle of \emph{autognosis}: every participant knows their own identity.
-This is formalized in the network language via a primitive $\AmIN$ operation,
+This is formalized in the network language via a primitive $\AmIN$ operation~\cite{GraversenHM24},
 which branches based on the relationship between the current party and a given value.
 For instance, $\AmI{\ell}{C_1}{C_2}$ means ``if the party running this program has name~$\ell$, run~$C_1$, otherwise run~$C_2$.''
 The PIs have generalized this to \AmIinN, which tests if the running program's name is in a given set~\citep{SamuelsonHC25}.
@@ -194,11 +194,14 @@ The first \AmIN check is necessary, but every subsequent check will produce the 
 
 We propose to eliminate these sorts of redundancies.
 For recursive polymorphic functions, we can compile to two different non-polymorphic recursive functions,
-one when the location variable resolves to the current party and one where it does not.
+one where the location variable resolves to the current party and one where it does not.
 The full function then uses a single \AmIN to select which non-polymorphic function to execute.
 While this may appear to lead to the same exponential code blowup as existing na\"ive uses of \AmIN,
 it is simply shifting the code expansion from inside the polymorphic function to outside.
 Moreover, the static analysis proposed above is, again, precisely the solution to mitigate any concern.
+
+\akh{It feels like we set up a punchline here but never said it.
+  I think the big thing we need to say is that ``this will remove a dynamic check at every recursive call, eliminating a significant runtime penalty'' or something like that.'}
 
 \subsubsection{Benchmarking Compilation Performance}
 \ethan{I haven't gotten to editing this yet.}
