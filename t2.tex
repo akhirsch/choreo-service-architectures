@@ -189,6 +189,7 @@ Moreover, the static analysis proposed above is, again, precisely the solution t
 
 These ideas lead to the following goal for optimizing compilation of process polymorphism:
 \begin{goal}
+  \label{goal:opt-epp}
   Create an optimized version of endpoint projection for process polymorphism
   that produces smaller program sizes and better run-time performance in common cases
   using multi-way \AmIN statements and elimination of redundant identity checks.
@@ -219,6 +220,7 @@ We will leverage recent growth in choreographic implementations~\citep{ShenKK23,
 to help assemble this corpus, as well as building our own case-studies using these implementations and our own.
 
 \begin{goal}
+  \label{goal:benchmark}
   Develop a representative benchmark suite for process-polymorphic EPP with general applicability.
 \end{goal}
 
