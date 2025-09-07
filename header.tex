@@ -138,17 +138,20 @@
 %%\usepackage{epstopdf}
 
 % Notes
+\usepackage{trimspaces}
+\makeatletter
 \newcommand{\newcommenter}[3]{%
   \ifdraft
     \newcommand{#1}[1]{%
       \begingroup\small\sffamily\color{#2}%
-        [#3: ##1]%
+        [#3: \trim@spaces{##1}]%
       \endgroup%
     }%
   \else
     \newcommand{#1}[1]{\ignorespaces}
   \fi
 }
+\makeatother
 \definecolor{darkgreen}{rgb}{0,0.7,0}
 
 \newcommenter{\ethan}{darkgreen}{Ethan}
@@ -206,18 +209,18 @@
 
 %% Choreographic Syntax
 \newcommand{\ChorCol}[1]{{\color{chorcolor}#1}}
-\newcommand{\FontChoreo}[1]{\programfont{\ChorCol{#1}}}
+\newcommand{\ChorFont}[1]{\programfont{\ChorCol{#1}}}
 
 \newcommand{\ChorDef}{\mathrel{\ChorCol{\coloneqq}}}
 \newcommand{\ColSend}{\mathrel{\ChorCol{\sendsto}}}
 
-\newcommand{\IfN}{\FontChoreo{if}}
-\newcommand{\Then}{\FontChoreo{then}}
-\newcommand{\Else}{\FontChoreo{else}}
-\newcommand{\ForkN}{\FontChoreo{fork}}
-\newcommand{\LetN}{\FontChoreo{let}}
-\newcommand{\In}{\FontChoreo{in}}
-\newcommand{\FunN}{\FontChoreo{fun}}
+\newcommand{\IfN}{\ChorFont{if}}
+\newcommand{\Then}{\ChorFont{then}}
+\newcommand{\Else}{\ChorFont{else}}
+\newcommand{\ForkN}{\ChorFont{fork}}
+\newcommand{\LetN}{\ChorFont{let}}
+\newcommand{\In}{\ChorFont{in}}
+\newcommand{\FunN}{\ChorFont{fun}}
 \newcommand{\LamN}{\ChorCol{\lambda}}
 \newcommand{\TLamN}{\ChorCol{\Lambda}}
 
