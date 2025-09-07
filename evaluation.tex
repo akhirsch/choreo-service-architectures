@@ -1,6 +1,37 @@
 \section{Evaluation Plan}
 \label{sec:eval}
 
+This proposal is designed to increase the expressivity and efficiency of process polymorphism.
+As such, the main evaluations of this work are theoretical (such as proofs that new choreographic primitives lead to deadlock-free programs) and experimental (via the benchmark designed in Goal~\ref{goal:benchmark}).
+All theoretical results will be published in peer-reviewed venues such as POPL, OOPSLA, and CONCUR; as much as possible, we plan to verify our theory in a proof assistant such as Rocq, Agda, or Lean.
+We now discuss for each thrust how we will evaluate the goals of that thrust.
+
+\hyperref[sec:t1]{Thrust~1} proposes the development of new choreographic primitives that take advantage of process polymorphism.
+In particular, Goal~\ref{goal:spawn} proposes the development of processes that can spawn new threads, while Goal~\ref{goal:multirecv} proposes the development of ``multireceive'' instructions that allow a process to receive a message from any number of other processes in any order.
+For both of these, we must be able to prove that a choreographic language with these primitives is still deadlock free.
+We also plan to develop practical examples of their usage: in order to test thread spawning (Goal~\ref{goal:spawn}) we will develop a thread-pool application, while to test multireceive (Goal~\ref{goal:multirecv}) we will develop a map-reduce application.
+Both of these will also be added to the benchmark we will develop for Goal~\ref{goal:benchmark}.
+
+\hyperref[sec:t2]{Thrust~2} proposes the development of optimizations for process polymorphism and a new benchmark for process-polymorphic choreographies.
+Goal~\ref{goal:opt-epp} consists of new techniques for endpoint projection in the face of process polymorphism.
+We first plan to prove that these optimizations are semantics preserving.
+We then plan to prove that in the common case these optimizations also decrease code size and performance cost.
+The benchmark of Goal~\ref{goal:benchmark} not only serves as a way to evaluate the other goals in this proposal, but also as a potential standard for choreographic optimizations.
+Thus, its final validation will come from adapting it to other choreographic implementations such as Choral~\cite{GiallorenzoMP24} and HasChor~\cite{ShenKK23,BatesK+25}.
+The PIs actively work with both teams and plan to reach out to them and help them adapt our benchmark.
+At a recent meeting of the choreographic-programming community, the development of such benchmarks was a major goal of the community.
+Therefore we anticipate the enthusiastic participation of both groups.
+
+Finally, \hyperref[sec:t3]{Thrust~3} proposes the development of new theory for process polymorphism.
+Goal~\ref{goal:wait-until-called} proposes the development of a new formalization of deadlock freedom that allows us to express services.
+Not only will we prove such that a language extension is deadlock free in this new formalization, we will also show how the thread-pool and map-reduce applications developed for Goals~\ref{goal:spawn} and Goal~\ref{goal:multirecv} can be turned into services.
+This will allow us to provide, for instance, a thread pool as a library function in choreographies.
+We will add these extended examples to the benchmark of Goal~\ref{goal:benchmark}.
+
+Goal~\ref{goal:strong-epp} proposes the development of a new paradigm of bisimulations that will allow us to make strong guarantees about endpoint projection with process polymorphism.
+While we believe that we can prove deadlock freedom of all of the features described above using the currently standard techniques, developing an argument based on this new technique will demonstrate its flexibility in addition to leading to more elegant theory.
+Moreover, we will show that we can use this new theory to prove other features of endpoint projection.
+In particular, we will show the liveness of the thread-pool service described above: the service will always eventually respond to any finite number of requests.
 
 %%% Local Variables:
 %%% mode: latex
