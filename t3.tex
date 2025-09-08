@@ -35,7 +35,42 @@ We suggest it because leads to an elegant solution with strong guarantees; howev
 \subsubsection{A New Paradigm for Bisimulations}
 \label{sec:new-parad-bisim}
 
+Previous work on choreographic languages focused on proving that endpoint projection induced a \emph{bisimulation} between the choreographic code and the projected code.
+A bisimulation says that any action taken by the choreographic code can be taken by the projected code and vice-versa.
+Note that the projected code allows actions taken by disjoint processes to happen in any order; because of this, almost all choreographic languages allow for \emph{out-of-order execution}~\cite{Montesi23,HirschG22,Cruz-FilipeM17}.
+Once a bisimulation has been established, deadlock freedom follows immediately from standard safety results of single-threaded languages.
 
+While bisimulations allow for extremely strong results, they are nearly impossible to establish for functional choreographic languages.
+This has led authors to either weaken their choreographic language considerably (which has been the PIs' approach)~\cite{HirschG22,SamuelsonHC25} or to apply fragile techniques that do not allow for basic additions to the language~\cite{CruzFilipeGLMP23}.
+As more and more features get added to functional choreographic languages, developing a better technique for proving deadlock freedom will become paramount.
+Moreover, such a technique will need to allow other properties of the choreographic language to be transported to its projection.
+
+We observe that such proofs do not require a full bisimulation between programs.
+Instead we can look at the possible \emph{traces} (or lists of actions taken during a particular run of a program) of both the choreography and the projected network.
+As long as these are \emph{equivalent} (equal up to rearranging actions of disjoint processes), then endpoint projection preserves that semantics of the choreography.
+This is enough to allow us to prove deadlock freedom and to transport other important properties from the choreographic language to its projection.
+Thus, we do not need to allow out-of-order execution of the choreography.
+Instead, we simply define its in-order trace-collecting execution, and then consider this trace up to equivalence.
+
+We believe that this scheme works perfectly for terminating languages.
+However, nonterminating languages allow things to get hairier.
+Consider the choreography $\Alice.(\programfont{loop}\,()); \Bob.42 \ColSend \Cathy$.
+In this program, \Alice{} enters an infinite loop ``and then'' \Bob{} sends 42 to \Cathy.
+If we were to use the scheme above using standard in-order trace-collecting execution, we would obtain a trace that consisted only \Alice{} in her loop.
+However, the projected program will have \Bob{} send 42 to \Cathy{} after some finite number of \Alice{}'s time around the loop.
+The traces are no longer equivalent, and thus our proof technique fails.
+
+In order to combat this, we plan to create a new in-order trace-collecting semantics which allows for programs to ``continue after an infinite loop.''
+The traces collected by this semantics can have \emph{any} ordinal as their length, allowing us to make guarantees about \Bob{} and \Cathy{}'s projections in the program above.
+This requires significant care to develop.
+For instance, consider the choreography $\Alice.(\programfont{loop}\,()); \Alice.42 \ColSend \Bob$.
+In this program, \Bob{} is waiting for a message from a process that is in an infinite loop, and therefore is equally ``blocked.''
+We must keep track of such ``blocked'' processes throughout the semantics.
+
+\paragraph{Preliminary Work}
+Both PIs have been working, along with a graduate student from each of Wisconsin and Buffalo, on developing the new paradigm of bisimulations.
+In particular, we have developed a trace-collecting semantics that allows for ordinal-length traces to be collected, including reasoning about ``blocked'' processes as above.
+We are currently trying to develop guarantees based on this semantics.
 
 \subsubsection{Service Functions}
 \label{sec:service-functions}
@@ -156,10 +191,6 @@ This allows us to consider both the world in which \Alice{} serves \Bob{}'s requ
 \end{goal}
 \fi
 
-\paragraph{Preliminary Work}
-Both PIs have been working, along with a graduate student from each of Wisconsin and Buffalo, on developing the new paradigm of bisimulations.
-In particular, we have developed a trace-collecting semantics that allows for ordinal-length traces to be collected, including reasoning about ``blocked'' processes as above.
-We are currently trying to develop guarantees based on this semantics.
 
 %%% Local Variables:
 %%% mode: latex
