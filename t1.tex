@@ -253,10 +253,26 @@ Fractional resource tracking dates back over 20 years~\citep{Boyland03,BornatCOP
 \subsubsection{Message Multi-Receives}
 \label{sec:multi-receive}
 
-\paragraph{Events}
-\label{sec:events}
+The second important new feature is to generalize receiving a message to allow receiving multiple messages.
+Existing choreographies allow a single location to \emph{send} messages to multiple recipients in a single (choreographic) instruction~\citep{BatesK+25,SamuelsonHC25} (a broadcast),
+but no choreographies allow a single location to \emph{receive} messages from multiple senders as a single operation.
 
-\ethan{Andrew, I think I might need to leave this one to you.}
+\ethan{
+  \begin{outline}{}
+    \item Multi-receives don't make sense without process polymorphism. Who sent which message?
+    \item Multi-receives are of minimal use if you demand all messages arrive; just do a bunch of single-receives in sequence.
+    \item When you allow subsets of messages, things get interesting.
+      \begin{lvl}
+        \item This is the fundamental primitive needed to build consensus protocols like Paxos.
+        \item What do you do with other messages that show up later? Do you drop them on the floor? Failures make this really complicated!
+      \end{lvl}
+    \item No need to limit to just a specific number of messages arriving, let's do triggered events!
+      \begin{lvl}
+        \item Need a way to specify conditions. Predicates over messages values?
+        \item Creates nondeterminism if multiple predicates are satisfied at the same time.
+      \end{lvl}
+  \end{outline}
+}
 
 %%% Local Variables:
 %%% mode: latex
