@@ -138,8 +138,10 @@ This code specifies that the pool manager~$\Mngr$ forks a new thread,
 binds the name of that thread to~$T$, and sends it to the client~$\Client$.
 The client then sends its job to the thread who runs it and passes the result back to the client.
 
-Just as alias analysis is important to scope-based memory management,
-we also need to ensure references to~$T$ do not escape the scope in which the thread is alive.
+Just as scoped memory management must ensure that references do not escape their scope through aliases or closures,
+we also need to ensure references to~$T$ remain confined.
+%Just as alias analysis is important to scope-based memory management,
+%we also need to ensure references to~$T$ do not escape the scope in which the thread is alive.
 %Ensuring that~$T$ is only referenced while it is alive is more complicated.
 %While the scoping provides a syntactic boundary for when such a reference is safe,
 %it does not automatically guarantee that no thread can attempt to reference~$T$ after it dies.
@@ -150,6 +152,8 @@ Our preliminary work indicates that we can resolve this dilemma by tracking the 
 and verifying that any function returned from a~\ForkN block does not reference the spawned location.
 Specifically, augmenting function types with the set of locations needed to compute the function
 allows the typing rule for~\ForkN to verify that those locations are all in scope---and thus alive---outside the~\ForkN block.
+Since location name variables are immutable, aliasing a name to a variable in a larger scope is not possible,
+so addressing the closure concern in this way solves the problem.
 
 \paragraph{Proposed Work: Spawned Locations with Unbounded Lifetimes}
 Our scope-based preliminary work provides a clean way to identify what code to provide a new location
@@ -253,14 +257,41 @@ Fractional resource tracking dates back over 20 years~\citep{Boyland03,BornatCOP
 \subsubsection{Message Multi-Receives}
 \label{sec:multi-receive}
 
-The second important new feature is to generalize receiving a message to allow receiving multiple messages.
+The second new feature is a generalization of receiving a message that allows one recipient to receive multiple messages.
 Existing choreographies allow a single location to \emph{send} messages to multiple recipients in a single (choreographic) instruction~\citep{BatesK+25,SamuelsonHC25} (a broadcast),
 but no choreographies allow a single location to \emph{receive} messages from multiple senders as a single operation.
 
+The power of this primitive becomes apparent when we require only a subset of the messages to arrive before the recipient can continue.
+This is a fundamental primitive currently missing from the choreographic literature that is necessary to build many systems,
+including distributed consensus protocols like Paxos~\citep{Lamport98}.
+In such protocols, each node waits for votes from all others on what operation to perform next,
+but must be able to continue once messages from half of the other nodes have arrived.
+
+To accomplish this goal, we propose to add a new syntactic form to choreographies:
+\[
+  \{\ell_1.e_1, \dotsc, \ell_n.e_n\} \multircv[k] \ell
+\]
+This term indicates that locations $\ell_1, \dotsc, \ell_n$ should run computations~$e_1, \dotsc, e_n$, respectively, and send the resulting values to~$\ell$.
+Location~$\ell$ can then accept those messages in any order and should continue executing once~$k$ of them arrive.
+Instead of getting a single value, as in normal message passing, $\ell$~will receive a list of~$k$ values, one for each message.
+
+The useful operation of this feature fundamentally relies on process polymorphism.
+When~$\ell$ receives its list of~$k$ messages, it must be able to identify who sent those messages
+to be able to respond or even simply record which ones arrived.
+With first-class process polymorphism, identifying the sender is simple;
+a multi-receive can produce a list of sender--value pairs, one for each message received.
+
+%Even the simplest version of a multi-receive that just removes ordering constraints as compared to a sequence of individual receives provides value.
+%With ordered receives, senders later in the list must wait on senders earlier in the list before proceeding
+%
+%While the simplest version of multi-receive simply removes ordering constraints from a sequence of individual receives,
+%its real power becomes evident when we only require a subset of the messages to arrive before the recipient continues.
+%This is a fundamental primitive needed to build many systems, such as distributed consensus protocols like Paxos~\citep{Lamport98}.
+
 \ethan{
   \begin{outline}{}
-    \item Multi-receives don't make sense without process polymorphism. Who sent which message?
-    \item Multi-receives are of minimal use if you demand all messages arrive; just do a bunch of single-receives in sequence.
+%    \item Multi-receives don't make sense without process polymorphism. Who sent which message?
+%    \item Multi-receives are of minimal use if you demand all messages arrive; just do a bunch of single-receives in sequence.
     \item When you allow subsets of messages, things get interesting.
       \begin{lvl}
         \item This is the fundamental primitive needed to build consensus protocols like Paxos.

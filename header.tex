@@ -214,6 +214,14 @@
 \newcommand{\ChorDef}{\mathrel{\ChorCol{\coloneqq}}}
 \newcommand{\ColSend}{\mathrel{\ChorCol{\sendsto}}}
 
+\newcommand{\multircv}[1][n]{\mathrel{\mathchoice%
+  {\mathord{\sendsto}\mkern-2mu\raisebox{0.125ex}{$\scriptstyle[#1]$}}
+  {\mathord{\sendsto}\mkern-2mu\raisebox{0.125ex}{$\scriptstyle[#1]$}}
+  {\mathord{\sendsto}\mkern-1mu\raisebox{0.1ex}{$\scriptstyle[#1]$}\mkern3mu}
+  {\mathord{\sendsto}\mkern-1mu\raisebox{0.05ex}{$\scriptstyle[#1]$}\mkern3mu}%
+}}
+%\newcommand{\multircv}[1]{\mathrel{\overset{#1}{\sendsto}}}
+
 \newcommand{\IfN}{\ChorFont{if}}
 \newcommand{\Then}{\ChorFont{then}}
 \newcommand{\Else}{\ChorFont{else}}
