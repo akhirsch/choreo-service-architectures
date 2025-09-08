@@ -1,48 +1,47 @@
 %thrust3.tex
-\subsection{Thrust 3 - Better Guarantees for Process-Polymorphic Programs}
+\subsection{Thrust 3 - Choreographic Services}
 \label{sec:t3}
 
+While choreographies in the state of the art excel at writing multiprocess programs, they are not able to express \emph{services}.
+Services require some \emph{provider} process(es) to wait for \emph{requests} from (an) unknown \emph{client} process(es).
+Once that request is received, some code is executed to \emph{satify} that request.
+Afterwords, the provider goes back to waiting for further requests.
+
+It may seem surprising that process polymorphism does not immediately provide the ability to create services.
+We can create a process-polymorphic function that allows anyone to interact with a provider.
+However, in order to run such a function the provider would already have to know the identity of the client, whereas a service waits for a request from an unknown client.
+Using the PI's joint work on first-class process polymorphism~\cite{SamuelsonHC25} could get around this problem, but would then require a known third party to tell the server the identity of the client.
+The ability to await requests from truly unknown clients does not exist in choreographies.
+
+Adding the ability to write services immediately runs into two problems, one small and one large.
+To understand the big problem, imagine that \Alice{} and \Bob{} are both trying to make requests to a service provider~\Server.
+Since the underlying communication substrate (such as a network in a distributed system) may deliver either message first, \Server{} could correctly begin satisfying either request.
+Once it has begun to serve one request, it cannot start to work on the other.
+This all happens despite the fact that in the choreographic program one request will certainly come before the other.
+Choreographic languages must therefore have some notion of \emph{out-of-order execution}.
+We believe that we can modify the notions of out-of-order execution used by previous works to fit choreographic services.
+However, by taking a more-radical approach, we believe we can get stronger results and more elegant proofs.
+
+To understand the small problem, imagine again that \Alice{} and \Bob{} are both trying to make requests to a service provider~\Server.
+After both requests are satisfied, \Server{} will go back to waiting.
+Intuitively this is not deadlock, despite the fact that a process waiting for a message that will never come is usually a sign of deadlock.
+We plan to alleviate this problem by adding distinguished \emph{service functions} which act like waits, but do not count as deadlocks.
+These service functions will likely require some restrictions to avoid deadlock themselves.
+
+The rest of this subsection discusses the two problems above in more detail and proposes solutions.
+We emphasize that solving the big problem using the radical approach we suggest here is not required.
+We suggest it because leads to an elegant solution with strong guarantees; however, if it fails we still believe we will be able to provide a deadlock-free notion of choreographic services.
+
+\subsubsection{A New Paradigm for Bisimulations}
+\label{sec:new-parad-bisim}
+
+
+
+\subsubsection{Service Functions}
+\label{sec:service-functions}
+
+
 \iffalse
-\vspace*{0.5em}
-\hrule
-\vspace*{0.5em}
-
-\ethan{Here's some text to build off of that I put into my grant insurance application}
-
-This work aims to address this shortcoming and develop the theory required to support service architectures in choreographic programming.
-In particular, it aims to address two core research questions in tandem.
-
-(1) How can we represent services in choreographic programs?
-
-The assumption that senders and receivers know each other's identities before messages are sent
-is embedded into the structure and syntax of existing choreographic languages.
-To ensure message sends and receives match up, and thus avoid deadlock,
-choreographic languages do not have separate send and receive instructions,
-but rather a single combined instruction that must specify the sender, recipient, and information being sent.
-This structure does not support the kind of client-server service architecture described above.
-
-We will therefore develop new language structures to specify these architectures within choreographies.
-They will include sending messages, but without the structural requirements of existing languages.
-Instead, the program for a server will only specify that it is waiting for a message from any client,
-while clients will be allowed to send requests to servers without identifying themselves in advance.
-
-(2) How do we formally define and enforce deadlock freedom with choreographic services?
-
-Being able to represent services in a choreographic language is not sufficient to realize the promise of choreographic programming.
-We also need to be able to analyze the behavior of the programs and continue to guarantee deadlock freedom.
-However, existing formal mathematical definitions of deadlock freedom require that,
-if the system cannot continue executing, then every component must have terminated.
-With services, however, this is not the case.
-A service waiting for a request when all potential clients have terminated is not itself terminated, but is also not deadlocked.
-This work aims to resolve this discrepancy.
-It will identify an appropriate definition of deadlock freedom and structure
-the choreographic service representation to enforce this new, more general notion.
-
-\vspace*{0.5em}
-\hrule
-\vspace*{0.5em}
-\fi
-
 \akh{New story idea:
   We want services.
   This requires (a) new formulation of DF and (b) new techniques for proving DF from choreos and (c) new out-of-order stuff.
@@ -155,6 +154,7 @@ This allows us to consider both the world in which \Alice{} serves \Bob{}'s requ
   Develop a new formalization of traces that allows us to establish a bisimulation in the presence of local infinite loops.
   Use it to develop strong guarantees for process-polymorphic code.
 \end{goal}
+\fi
 
 \paragraph{Preliminary Work}
 Both PIs have been working, along with a graduate student from each of Wisconsin and Buffalo, on developing the new paradigm of bisimulations.
