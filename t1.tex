@@ -27,9 +27,33 @@ Many systems incorporate thread pools that dynamically resize based on demand.
 That is, at high-demand times when requests are regularly waiting on threads, they spawn more,
 and at low-demand times when threads are regularly sitting idle, excess threads are killed.
 The proposed work would allow us to implement such thread pools as choreographies
-with code akin to the following.
+with code akin to the following, where~$F$ is a local thunk provided by the client~$\Client$
+specifying the computation to run.
 \[
-  \text{\ethan{Thread pool example code.}}
+  \addtocounter{numlevels}{1}
+  \Fun{\programfont{runJob}}{F}{
+%    \LetInRaw*{
+%      \begin{array}[t]{@{}l@{}}
+%        T \ChorDef \ITE*{\Mngr.\programfont{enoughWorkers()}}
+%                        {(\Mngr.\programfont{selectWorker}() \ColSend \Client)}
+%                        {(\Mngr.\ChorFont{spawn} \ColSend \Client)} \\
+%        T.f \ChorDef F \ColSend T \\
+%        \Client.\mathit{res} \ChorDef T.(f~()) \ColSend \Client
+%      \end{array}
+%    }{
+%      \Client.\text{``}\programfont{done}\text{''} \ColSend \Mngr \seq
+%      \Mngr.\programfont{releaseOrKillWorker}(T) \seq
+%      \Client.\mathit{res}
+%    }
+    \LetMany{{T}{\ITE*{\Mngr.\programfont{enoughWorkers()}}{\Mngr.\programfont{selectWorker}() \ColSend \Client}{\Mngr.\ChorFont{spawn} \ColSend \Client}}%
+             {T.f}{F \ColSend T}%
+             {\Client.\mathit{res}}{T.(f~()) \ColSend \Client}}{%
+      \Client.\text{``}\programfont{done}\text{''} \ColSend \Mngr \seq
+      \Mngr.\programfont{releaseOrKillWorker}(T) \seq
+      \Client.\mathit{res}
+    }
+  }
+  \addtocounter{numlevels}{-1}
 \]
 
 The PIs recent work on first-class location polymorphism showed how to
@@ -46,35 +70,62 @@ all illustrated by the above example.
     Otherwise the new location cannot send or receive messages, meaning they cannot participate in the choreography in any meaningful way.
 
     \textit{Example:} Clients of newly-spawned threads must know where to send their jobs.
+
+  \item\label{spawn:li:kill}
+    If a location is killed, living locations must know not to send to or receive from the terminated location.
+    A retained reference to a dead name can result in a live location attempting to contact a dead one, producing deadlock.
+
+    \textit{Example:} The pool manager and clients must properly discard all references to a killed thread.
+
   \item\label{spawn:li:code}
     The new location must know what code to execute, and it must match the code existing nodes expect.
     Without the correct code, the new location and existing locations might not have matching message sends and receives, causing deadlock.
 
     \textit{Example:} New threads must know to wait for instructions from a client and execute them
     and reply with the result, or the client will deadlock.
-  \item\label{spawn:li:kill}
-    If a location is killed, living locations must know not to send to or receive from the terminated location.
-    A retained reference to a dead name can result in a live location attempting to contact a dead one, producing deadlock.
-
-    \textit{Example:} The pool manager and clients must properly discard all references to a killed thread.
 \end{enumerate}
 
-The first concern is solved immediately by first-class location polymorphism.
+Problem~\ref{spawn:li:name} is immediately solved by first-class location polymorphism.
 Upon spawning a new thread, we give it a new name and bind that name to a location variable.
 That location now functions just as any other polymorphic location variable;
 it can be transmitted across the network or used as an endpoint for sending and receiving messages.
+Problems~\ref{spawn:li:kill} and~\ref{spawn:li:code}---both of which can cause deadlock if not properly addressed---require additional research.
 
-Problems~\ref{spawn:li:code} and~\ref{spawn:li:kill}---both of which can cause deadlock if not properly addressed---require additional research.
-We propose two complementary strategies to addressing these concerns and retaining deadlock freedom with spawned locations:
-scoped locations, and fractional permission tracking.
+A key insight is that Problem~\ref{spawn:li:kill} closely resembles classic memory management concerns.
+Just as memory should not be referenced after being freed, lest the application crash or expose critical security vulnerabilities,
+locations should not be referenced after they are killed, lest the application deadlock.
+Similarly, if a location's computation has completed, it should be killed to avoid leaking resources,
+just memory locations should be freed when their values are no longer needed.
+
+There are, however, two important differences between our setting and traditional memory management.
+Making our setting simpler is that, unlike values in memory which can themselves contain memory addresses,
+location names are opaque and it is the top-level code that refers to them.
+We therefore have no need for the sort of reachability analysis employed by many automatic memory management systems.
+Indeed, simple reference counting would be sufficient to determine when no more code references a spawned location.
+Making our setting considerably more challenging, however, is Problem~\ref{spawn:li:code} mentioned above:
+new locations must know what code to execute.
+With an entirely dynamic lifetime, it is not clear what code a new location will need or how to determine that when spawning it.
+
+We propose to investigate how various automatic memory management strategies translate to the context spawned choreographic location management.
+In particular, we have substantial preliminary results showing the plausibility of scope-based lifetimes.
+We will also investigate other techniques, including reference counting---simplified in our setting---and Rust-style linearity
+to control aliasing and more directly identify inaccessible locations.
+
+\begin{goal}
+  \label{goal:spawn}
+  Design and implement dynamic location spawning and killing in choreographies while maintaining deadlock-freedom guarantees.
+\end{goal}
 
 \paragraph{Preliminary Work: Scoped Locations}
-Preliminary work conducted by both PIs and PI Cecchetti's graduate student
-has shown that confining the lifetime of spawned locations to a syntactic scope in the choreography is a viable approach.
+Preliminary work by both PIs and PI Cecchetti's graduate student
+has shown that basing the lifetime of a spawned location on a syntactic scope in the choreography is a viable approach.
+In particular, syntactic scoping provides a simple solution to Problem~\ref{spawn:li:code}:
+the code for a spawned thread~$T$ is simply the $T$-projection of the code for which it is in scope.
+
 In the thread pool example, if there are too many requests, the pool manager could easily spawn a new thread
 to process an individual request and that thread would automatically die after processing is complete.
-The code for this case might look as follows where~$F$ is a local thunk provided by the client~$\Client$
-specifying the computation to run.
+The code for this case might look as follows.
+As above, $F$~is a local thunk specifying~\Client's computation.
 \[
   \addtocounter{numlevels}{1}
   \ForkIn{\Mngr}{T \ColSend \Client}{%
@@ -87,38 +138,41 @@ This code specifies that the pool manager~$\Mngr$ forks a new thread,
 binds the name of that thread to~$T$, and sends it to the client~$\Client$.
 The client then sends its job to the thread who runs it and passes the result back to the client.
 
-Scoping the lifetime of~$T$ makes it very easy to know what code it needs:
-the $T$-projection of the body of the~\ForkN block.
-Ensuring that~$T$ is only referenced while it is alive is more complicated.
-While the scoping provides a syntactic boundary for when such a reference is safe,
-it does not automatically guarantee that no thread can attempt to reference~$T$ after it dies.
+Just as alias analysis is important to scope-based memory management,
+we also need to ensure references to~$T$ do not escape the scope in which the thread is alive.
+%Ensuring that~$T$ is only referenced while it is alive is more complicated.
+%While the scoping provides a syntactic boundary for when such a reference is safe,
+%it does not automatically guarantee that no thread can attempt to reference~$T$ after it dies.
 Consider the following choreography that forks a process and returns a function closing over its name: $\ForkIn{\Alice}{T}{\LamN \_\ldotp \Alice.42 \ColSend T}$.
-This function, if applied, would immediately cause deadlock, as~\Alice attempts to send~$42$ to a thread that is no longer alive.
+This function, if applied, would immediately cause deadlock, as~\Alice attempts to send~$42$ to a thread that is now dead.
 
-Instead, our preliminary work indicates that we can resolve this dilemma by tracking the locations involved in a function
+Our preliminary work indicates that we can resolve this dilemma by tracking the locations involved in a function
 and verifying that any function returned from a~\ForkN block does not reference the spawned location.
 Specifically, augmenting function types with the set of locations needed to compute the function
 allows the typing rule for~\ForkN to verify that those locations are all in scope---and thus alive---outside the~\ForkN block.
 
-As part of the proposed work, we will complete this preliminary work, including providing a proof deadlock freedom
-and a variety of practical examples.
+\paragraph{Proposed Work: Spawned Locations with Unbounded Lifetimes}
+Our scope-based preliminary work provides a clean way to identify what code to provide a new location
+and makes clear that \emph{some} form of location spawning is viable, it is not without drawbacks.
+In particular, it is unable to handle new locations with indefinite lifetimes.
+For example, the thread pool may not wish to spawn additional threads only for a single task,
+but instead simply increase the pool capacity when demand is high
+and be willing to kill any thread that happens to be idle when demand is low.
 
-\ethan{Do we need a goal here? It really feels like ``just write the paper we submitted to POPL.''}
+To support this more flexible mode of dynamic locations, we will investigate how other memory management techniques
+transfer into the choreographic location management domain.
+We will especially focus on how to provide the correct code to new locations with no static bound on their lifetime.
+Two promising approaches are (1)~to give new parties a view of the entire application code,
+and (2)~restrict new parties to specific behavior fixed when they are spawned.
+The first option would require existing locations to keep extra copies of the entire application code if they are able to initiate a spawn.
+The second would need static verification that existing locations only attempt to interact with a new party
+in accordance with the code it is provided, which would require statically tracking what different locations are able to do.
 
-%\ethan{%
-%\begin{outline}{Scoped Locations}
-%  \item Lifetime of new location defined by syntactic scope of \ForkN.
-%  \item Makes clear what code to send to the new location (everything in the scope where it is alive).
-%  \item Clear boundary for where the location can be referenced.
-%  \item Still need to stop spawned location names from leaking out of the scope (e.g., inside closures).
-%    \begin{lvl}
-%      \item Track who is involved in the types.
-%      \item Involved-location check of return types at the scope boundary.
-%    \end{lvl}
-%\end{outline}
-%}
+\iffalse
+% This is a bunch of stuff I wrote before we realized it was all memory management.
+% I'm leaving it for now because it was never in git before
 
-\paragraph{Proposed Work: Fractional Permission Tracking}
+\paragraph{Proposed Work: Linear Locations with Fractional Permissions}
 The scoped-based process forking described above allows for any application that spawns new locations to handle individual tasks.
 While many such applications exist---making it a powerful addition to the choreographic toolbox---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
 some systems require dynamic locations with indefinite lifetimes.
@@ -127,8 +181,46 @@ but instead simply increase the pool capacity when demand is high
 and be willing to kill any thread that happens to be idle when demand is low.
 
 To support this more flexible mode of dynamic locations, we propose a second, complementary approach to
-ensuring terminated threads do are not referenced---and thus do not cause deadlock.
-Specifically, we propose tracking fractional permission in the type system~\todo{cite relevant stuff}.
+ensuring terminated threads are not referenced---and thus do not cause deadlock.
+Specifically, we propose tracking locations linearly in a type system.
+
+Linear types~\todo{cite} are a way of ensuring that values are used exactly once.
+They are common when tracking resources, such as money, that cannot be safely created or destroyed~\citep{move-lang,CoblenzOE+20,DasBHPS21}.
+Operations using linear values consume them, but may create a new reference if they are still usable afterward.
+
+We propose to apply this idea to spawned location in choreographies,
+allows us to correctly track which locations exist without confining them to a syntactic program scope.
+In particular, if location names are linear, then only one reference to each location can exist at a time.
+When a location is involved in a normal operation after which it continues executing---message sending or local computation---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+the choreography can simply produce another reference to the same location, indicating that it can be used again.
+When a location is killed, however, such as a thread pool manager culling unneeded threads,
+that instruction consumes the only reference to the location, correctly rendering inaccessible to the rest of the program.
+
+This approach allows us to implement the dynamic thread pool described above.
+Upon spawning a thread, \Mngr~adds the linear reference to that thread to the pool.
+When assigning a job, \Mngr~passes the linear reference to~\Client, removing it from the pool.
+After a job is complete, \Client~returns the linear reference to~\Mngr, ensuring that they will not reference the thread again,
+and~\Mngr can either place it back in the pool or kill it.
+
+\ethan{
+  Interesting point I want to make, but I'm not sure how:
+  linearity is not uncommon in concurrent settings to prevent things like race conditions.
+  In those contexts, the object belongs to one thread at a time, and they can pass it around (basically just ownership).
+  That's \emph{not} what we need here.
+  We don't care if multiple locations are talking to this one linear location at a time,
+  we care that we can track what part of the \emph{code} the location exists in
+  so that we know we can't kill it and still have it exist somewhere else.
+  It's essentially just an alias analysis.
+}
+
+\paragraph{Fractional Permissions}
+One severe limitation of the linear locations described above is that a location can only exist in one context at a time.
+That restriction prevents (non-linear) functions from closing over location names
+or from multiple independent parties from concurrently 
+
+Specifically, we propose tracking fractional resources using a linear type system.
+
+Fractional resource tracking dates back over 20 years~\citep{Boyland03,BornatCOP05}
 
 \ethan{Things we need to discuss:
 \begin{outline}{}
@@ -156,6 +248,7 @@ Specifically, we propose tracking fractional permission in the type system~\todo
 %We propose two ways of handling this: scoping and linearity.
 %We have preliminary work showing how to make scoping work, but it's missing some important features (e.g., thread pools).
 %We will finish that and figure out to make linearity work.}
+\fi
 
 \subsubsection{Message Multi-Receives}
 \label{sec:multi-receive}

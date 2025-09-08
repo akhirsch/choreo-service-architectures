@@ -226,8 +226,10 @@
 
 \newcommand{\ForkIn}[3]{{#1}.\ForkN~{#2}~\In~{#3}}
 \newMLP*{\ForkIn}[3]{{#1}.\ForkN~{#2} \\ \In~{#3}}
-\newcommand{\LetIn}[3]{\LetN~{#1} \ChorDef {#2}~\In~{#3}}
-\newMLP*[r@{~}l]{\LetIn}[3]{\LetN & {#1} \ChorDef {#2} \\ \In & {#3}}
+\newcommand{\LetInRaw}[2]{\LetN~{#1}~\In~{#2}}
+\newMLP*[r@{~}l]{\LetInRaw}[2]{\LetN & {#1} \\ \In & {#2}}
+\newcommand{\LetIn}[3]{\LetInRaw{{#1} \ChorDef {#2}}{#3}}
+\WithSuffix\newcommand\LetIn*[3]{\LetInRaw*{{#1} \ChorDef {#2}}{#3}}
 \makeatletter
 \newMLP{\LetMany}[2]{\LetN ~ {\typeset@def@block{\ChorDef}{#1}} \\ \In ~ {#2}}
 \makeatother
