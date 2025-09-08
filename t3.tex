@@ -1,48 +1,128 @@
 %thrust3.tex
-\subsection{Thrust 3 - Better Guarantees for Process-Polymorphic Programs}
+\subsection{Thrust 3 - Choreographic Services}
 \label{sec:t3}
 
+While choreographies in the state of the art excel at writing multiprocess programs, they are not able to express \emph{services}.
+Services require some \emph{provider} process(es) to wait for \emph{requests} from (an) unknown \emph{client} process(es).
+Once that request is received, some code is executed to \emph{satify} that request.
+Afterwords, the provider goes back to waiting for further requests.
+
+It may seem surprising that process polymorphism does not immediately provide the ability to create services.
+We can create a process-polymorphic function that allows anyone to interact with a provider.
+However, in order to run such a function the provider would already have to know the identity of the client, whereas a service waits for a request from an unknown client.
+Using the PI's joint work on first-class process polymorphism~\cite{SamuelsonHC25} could get around this problem, but would then require a known third party to tell the server the identity of the client.
+The ability to await requests from truly unknown clients does not exist in choreographies.
+
+Adding the ability to write services immediately runs into two problems, one small and one large.
+To understand the big problem, imagine that \Alice{} and \Bob{} are both trying to make requests to a service provider~\Server.
+Since the underlying communication substrate (such as a network in a distributed system) may deliver either message first, \Server{} could correctly begin satisfying either request.
+Once it has begun to serve one request, it cannot start to work on the other.
+This all happens despite the fact that in the choreographic program one request will certainly come before the other.
+Choreographic languages must therefore have some notion of \emph{out-of-order execution}.
+We believe that we can modify the notions of out-of-order execution used by previous works to fit choreographic services.
+However, by taking a more-radical approach, we believe we can get stronger results and more elegant proofs.
+
+To understand the small problem, imagine again that \Alice{} and \Bob{} are both trying to make requests to a service provider~\Server.
+After both requests are satisfied, \Server{} will go back to waiting.
+Intuitively this is not deadlock, despite the fact that a process waiting for a message that will never come is usually a sign of deadlock.
+We plan to alleviate this problem by adding distinguished \emph{service functions} which act like waits, but do not count as deadlocks.
+These service functions will likely require some restrictions to avoid deadlock themselves.
+
+The rest of this subsection discusses the two problems above in more detail and proposes solutions.
+We emphasize that solving the big problem using the radical approach we suggest here is not required.
+We suggest it because leads to an elegant solution with strong guarantees; however, if it fails we still believe we will be able to provide a deadlock-free notion of choreographic services.
+
+\subsubsection{A New Paradigm for Bisimulations}
+\label{sec:new-parad-bisim}
+
+Previous work on choreographic languages focused on proving that endpoint projection induced a \emph{bisimulation} between the choreographic code and the projected code.
+A bisimulation says that any action taken by the choreographic code can be taken by the projected code and vice-versa.
+Note that the projected code allows actions taken by disjoint processes to happen in any order; because of this, almost all choreographic languages allow for \emph{out-of-order execution}~\cite{Montesi23,HirschG22,Cruz-FilipeM17}.
+Once a bisimulation has been established, deadlock freedom follows immediately from standard safety results of single-threaded languages.
+
+While bisimulations allow for extremely strong results, they are nearly impossible to establish for functional choreographic languages.
+This has led authors to either weaken their choreographic language considerably (which has been the PIs' approach)~\cite{HirschG22,SamuelsonHC25} or to apply fragile techniques that do not allow for basic additions to the language~\cite{CruzFilipeGLMP23}.
+As more and more features get added to functional choreographic languages, developing a better technique for proving deadlock freedom will become paramount.
+Moreover, such a technique will need to allow other properties of the choreographic language to be transported to its projection.
+
+We observe that such proofs do not require a full bisimulation between programs.
+Instead we can look at the possible \emph{traces} (or lists of actions taken during a particular run of a program) of both the choreography and the projected network.
+As long as these are \emph{equivalent} (equal up to rearranging actions of disjoint processes), then endpoint projection preserves that semantics of the choreography.
+This is enough to allow us to prove deadlock freedom and to transport other important properties from the choreographic language to its projection.
+Thus, we do not need to allow out-of-order execution of the choreography.
+Instead, we simply define its in-order trace-collecting execution, and then consider this trace up to equivalence.
+
+We believe that this scheme works perfectly for terminating languages.
+However, nonterminating languages allow things to get hairier.
+Consider the choreography $\Alice.(\programfont{loop}\,()); \Bob.42 \ColSend \Cathy$.
+In this program, \Alice{} enters an infinite loop ``and then'' \Bob{} sends 42 to \Cathy.
+If we were to use the scheme above using standard in-order trace-collecting execution, we would obtain a trace that consisted only \Alice{} in her loop.
+However, the projected program will have \Bob{} send 42 to \Cathy{} after some finite number of \Alice{}'s time around the loop.
+The traces are no longer equivalent, and thus our proof technique fails.
+
+In order to combat this, we plan to create a new in-order trace-collecting semantics which allows for programs to ``continue after an infinite loop.''
+The traces collected by this semantics can have \emph{any} ordinal as their length, allowing us to make guarantees about \Bob{} and \Cathy{}'s projections in the program above.
+This requires significant care to develop.
+For instance, consider the choreography $\Alice.(\programfont{loop}\,()); \Alice.42 \ColSend \Bob$.
+In this program, \Bob{} is waiting for a message from a process that is in an infinite loop, and therefore is equally ``blocked.''
+We must keep track of such ``blocked'' processes throughout the semantics.
+
+\begin{goal}
+  \label{goal:strong-epp}
+  Develop a new formalization of traces that allows us to establish a bisimulation in the presence of local infinite loops.
+  Use it to develop strong guarantees for process-polymorphic code.
+\end{goal}
+
+\paragraph{Preliminary Work}
+Both PIs have been working, along with a graduate student from each of Wisconsin and Buffalo, on developing the new paradigm of bisimulations.
+In particular, we have developed a trace-collecting semantics that allows for ordinal-length traces to be collected, including reasoning about ``blocked'' processes as above.
+We are currently trying to develop guarantees based on this semantics.
+
+\subsubsection{Service Functions}
+\label{sec:service-functions}
+
+In order to provide a service, a process has to be willing to wait indefinitely to receive a request from an unknown client.
+This puts the concept of services in contrast with the usual choreographic notion of deadlock freedom, which requires that either there is some step that a system can take or no process has pending communications.
+We plan to address this by creating a notion of \emph{service functions} which act almost like normal polymorphic functions at the choreographic level.
+For instance, we might have a service function with the following signature:
+$$
+\programfont{do\_service}[\programfont{providers}\; \Alice, \Bob](X : \programfont{client},\, x : X.\programfont{int})
+$$
+This declares a new service function \programfont{do\_service} provided by \Alice{} and \Bob{} with a client~$X$.
+When projected to \Alice{} and \Bob{}, this will cause them to wait for some client~$X$ to request the service.
+When the \programfont{do\_service} function is called in a choreography we discover who the client is.
+For instance, we might have the call $\programfont{do\_service}\,(\Cathy, \Cathy.42)$, which tells us that \Cathy{} is the client of the function.
+For \Cathy{}, this projects to a message send \Alice{} and \Bob{}, followed by her participation in the function.
+For \Alice{} and \Bob{}, this projects to nothing: they are already waiting to participate in the function.
+
+As mentioned above, one of the bigger wrinkles comes from the fact that services can become races: if two clients are trying to contact a service simultaneously, which request gets processed first is nondeterministic.
+If we are able to build the new formalization of traces of Goal~\ref{goal:strong-epp}, then there is a simple way forward: when a provider starts and finishes a response to a client, they emit dual trace operations.
+We then require traces to be well-bracketed---every start of a response to a client must be finished with an end of that same response---and consider traces to be equivalent if entire subtraces are commuted.
+This complicates the theory traced above slightly, but retains its spirit.
+If we do not successfully build this new formalization before developing the theory of service functions, then we believe that we can adapt previous arguments for deadlock freedom to this case.
+
+In order for this to work, care must be taken.
+First, we must make sure that the providers of a choreographic service do nothing but provide those services (perhaps after some initial setup).
+If we allow them to participate in other code freely, then they may be attempting to communicate with a client when the client makes a request, leading to deadlock.
+Similarly, any third party involved in responding to a request must be contacted through a service.
+Otherwise, they will participate in the service once and then end.
+When the service is requested again (perhaps by a different client), they will not be available to respond.
+It is likely that other such restrictions will be required, as we shall discover when attempting to design such a system.
+
+Once we have these special service functions, we can treat listening for a (collection of) service function(s) as a value, rather than as a pending message receive.
+Since a service that is listening for more clients is not deadlocked, allowing this will not impact deadlock freedom.
+This is similar to the approach taken to services in session types, which use replication to model services~\cite{DeYoungCPT09,CairesP10,Wadler12,LeBrunFD25}.
+It is also similar to coalgebraic data types, which wait to be observed before reacting~\cite{KozenS17}.
+We plan to use techniques from each to develop our theory of service functions.
+
+\begin{goal}
+  \label{goal:wait-until-called}
+  Develop a theory of service functions, service providers, and clients.
+  Prove that it is deadlock free.
+\end{goal}
+
+
 \iffalse
-\vspace*{0.5em}
-\hrule
-\vspace*{0.5em}
-
-\ethan{Here's some text to build off of that I put into my grant insurance application}
-
-This work aims to address this shortcoming and develop the theory required to support service architectures in choreographic programming.
-In particular, it aims to address two core research questions in tandem.
-
-(1) How can we represent services in choreographic programs?
-
-The assumption that senders and receivers know each other's identities before messages are sent
-is embedded into the structure and syntax of existing choreographic languages.
-To ensure message sends and receives match up, and thus avoid deadlock,
-choreographic languages do not have separate send and receive instructions,
-but rather a single combined instruction that must specify the sender, recipient, and information being sent.
-This structure does not support the kind of client-server service architecture described above.
-
-We will therefore develop new language structures to specify these architectures within choreographies.
-They will include sending messages, but without the structural requirements of existing languages.
-Instead, the program for a server will only specify that it is waiting for a message from any client,
-while clients will be allowed to send requests to servers without identifying themselves in advance.
-
-(2) How do we formally define and enforce deadlock freedom with choreographic services?
-
-Being able to represent services in a choreographic language is not sufficient to realize the promise of choreographic programming.
-We also need to be able to analyze the behavior of the programs and continue to guarantee deadlock freedom.
-However, existing formal mathematical definitions of deadlock freedom require that,
-if the system cannot continue executing, then every component must have terminated.
-With services, however, this is not the case.
-A service waiting for a request when all potential clients have terminated is not itself terminated, but is also not deadlocked.
-This work aims to resolve this discrepancy.
-It will identify an appropriate definition of deadlock freedom and structure
-the choreographic service representation to enforce this new, more general notion.
-
-\vspace*{0.5em}
-\hrule
-\vspace*{0.5em}
-\fi
-
 \akh{New story idea:
   We want services.
   This requires (a) new formulation of DF and (b) new techniques for proving DF from choreos and (c) new out-of-order stuff.
@@ -155,11 +235,8 @@ This allows us to consider both the world in which \Alice{} serves \Bob{}'s requ
   Develop a new formalization of traces that allows us to establish a bisimulation in the presence of local infinite loops.
   Use it to develop strong guarantees for process-polymorphic code.
 \end{goal}
+\fi
 
-\paragraph{Preliminary Work}
-Both PIs have been working, along with a graduate student from each of Wisconsin and Buffalo, on developing the new paradigm of bisimulations.
-In particular, we have developed a trace-collecting semantics that allows for ordinal-length traces to be collected, including reasoning about ``blocked'' processes as above.
-We are currently trying to develop guarantees based on this semantics.
 
 %%% Local Variables:
 %%% mode: latex
