@@ -67,6 +67,12 @@ For instance, consider the choreography $\Alice.(\programfont{loop}\,()); \Alice
 In this program, \Bob{} is waiting for a message from a process that is in an infinite loop, and therefore is equally ``blocked.''
 We must keep track of such ``blocked'' processes throughout the semantics.
 
+\begin{goal}
+  \label{goal:strong-epp}
+  Develop a new formalization of traces that allows us to establish a bisimulation in the presence of local infinite loops.
+  Use it to develop strong guarantees for process-polymorphic code.
+\end{goal}
+
 \paragraph{Preliminary Work}
 Both PIs have been working, along with a graduate student from each of Wisconsin and Buffalo, on developing the new paradigm of bisimulations.
 In particular, we have developed a trace-collecting semantics that allows for ordinal-length traces to be collected, including reasoning about ``blocked'' processes as above.
@@ -74,6 +80,46 @@ We are currently trying to develop guarantees based on this semantics.
 
 \subsubsection{Service Functions}
 \label{sec:service-functions}
+
+In order to provide a service, a process has to be willing to wait indefinitely to receive a request from an unknown client.
+This puts the concept of services in contrast with the usual choreographic notion of deadlock freedom, which requires that either there is some step that a system can take or no process has pending communications.
+We plan to address this by creating a notion of \emph{service functions} which act almost like normal polymorphic functions at the choreographic level.
+For instance, we might have a service function with the following signature:
+$$
+\programfont{do\_service}[\programfont{providers}\; \Alice, \Bob](X : \programfont{client},\, x : X.\programfont{int})
+$$
+This declares a new service function \programfont{do\_service} provided by \Alice{} and \Bob{} with a client~$X$.
+When projected to \Alice{} and \Bob{}, this will cause them to wait for some client~$X$ to request the service.
+When the \programfont{do\_service} function is called in a choreography we discover who the client is.
+For instance, we might have the call $\programfont{do\_service}\,(\Cathy, \Cathy.42)$, which tells us that \Cathy{} is the client of the function.
+For \Cathy{}, this projects to a message send \Alice{} and \Bob{}, followed by her participation in the function.
+For \Alice{} and \Bob{}, this projects to nothing: they are already waiting to participate in the function.
+
+As mentioned above, one of the bigger wrinkles comes from the fact that services can become races: if two clients are trying to contact a service simultaneously, which request gets processed first is nondeterministic.
+If we are able to build the new formalization of traces of Goal~\ref{goal:strong-epp}, then there is a simple way forward: when a provider starts and finishes a response to a client, they emit dual trace operations.
+We then require traces to be well-bracketed---every start of a response to a client must be finished with an end of that same response---and consider traces to be equivalent if entire subtraces are commuted.
+This complicates the theory traced above slightly, but retains its spirit.
+If we do not successfully build this new formalization before developing the theory of service functions, then we believe that we can adapt previous arguments for deadlock freedom to this case.
+
+In order for this to work, care must be taken.
+First, we must make sure that the providers of a choreographic service do nothing but provide those services (perhaps after some initial setup).
+If we allow them to participate in other code freely, then they may be attempting to communicate with a client when the client makes a request, leading to deadlock.
+Similarly, any third party involved in responding to a request must be contacted through a service.
+Otherwise, they will participate in the service once and then end.
+When the service is requested again (perhaps by a different client), they will not be available to respond.
+It is likely that other such restrictions will be required, as we shall discover when attempting to design such a system.
+
+Once we have these special service functions, we can treat listening for a (collection of) service function(s) as a value, rather than as a pending message receive.
+Since a service that is listening for more clients is not deadlocked, allowing this will not impact deadlock freedom.
+This is similar to the approach taken to services in session types, which use replication to model services~\cite{DeYoungCPT09,CairesP10,Wadler12,LeBrunFD25}.
+It is also similar to coalgebraic data types, which wait to be observed before reacting~\cite{KozenS17}.
+We plan to use techniques from each to develop our theory of service functions.
+
+\begin{goal}
+  \label{goal:wait-until-called}
+  Develop a theory of service functions, service providers, and clients.
+  Prove that it is deadlock free.
+\end{goal}
 
 
 \iffalse
