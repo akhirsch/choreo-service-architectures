@@ -267,43 +267,74 @@ including distributed consensus protocols like Paxos~\citep{Lamport98}.
 In such protocols, each node waits for votes from all others on what operation to perform next,
 but must be able to continue once messages from half of the other nodes have arrived.
 
-To accomplish this goal, we propose to add a new syntactic form to choreographies:
+To accomplish this goal, we will add a new syntactic form to choreographies:
 \[
-  \{\ell_1.e_1, \dotsc, \ell_n.e_n\} \multircv[k] \ell
+  \{\ell_1.e_1, \dotsc, \ell_n.e_n\} \multircv{k} \ell
 \]
 This term indicates that locations $\ell_1, \dotsc, \ell_n$ should run computations~$e_1, \dotsc, e_n$, respectively, and send the resulting values to~$\ell$.
 Location~$\ell$ can then accept those messages in any order and should continue executing once~$k$ of them arrive.
 Instead of getting a single value, as in normal message passing, $\ell$~will receive a list of~$k$ values, one for each message.
 
-The useful operation of this feature fundamentally relies on process polymorphism.
+Making this feature useful fundamentally relies on process polymorphism.
 When~$\ell$ receives its list of~$k$ messages, it must be able to identify who sent those messages
 to be able to respond or even simply record which ones arrived.
 With first-class process polymorphism, identifying the sender is simple;
-a multi-receive can produce a list of sender--value pairs, one for each message received.
+the message list from the multi-receive contains not just the value of each message, but a sender--value pair for each.
 
-%Even the simplest version of a multi-receive that just removes ordering constraints as compared to a sequence of individual receives provides value.
-%With ordered receives, senders later in the list must wait on senders earlier in the list before proceeding
-%
-%While the simplest version of multi-receive simply removes ordering constraints from a sequence of individual receives,
-%its real power becomes evident when we only require a subset of the messages to arrive before the recipient continues.
-%This is a fundamental primitive needed to build many systems, such as distributed consensus protocols like Paxos~\citep{Lamport98}.
+\paragraph{Message-Based Triggered Events}
+Some applications---like Byzantine fault tolerant~(BFT) consensus protocols---wait not just for a fixed number of messages,
+but for messages that satisfy a more complicated condition---like enough messages \emph{with the same value}.
+The above-proposed multi-receive is powerful, but is not expressive enough to implement this functionality.
+We propose to further empower these multi-receive operations by extending them to support \emph{triggered events}.
 
-\ethan{
-  \begin{outline}{}
-%    \item Multi-receives don't make sense without process polymorphism. Who sent which message?
-%    \item Multi-receives are of minimal use if you demand all messages arrive; just do a bunch of single-receives in sequence.
-    \item When you allow subsets of messages, things get interesting.
-      \begin{lvl}
-        \item This is the fundamental primitive needed to build consensus protocols like Paxos.
-        \item What do you do with other messages that show up later? Do you drop them on the floor? Failures make this really complicated!
-      \end{lvl}
-    \item No need to limit to just a specific number of messages arriving, let's do triggered events!
-      \begin{lvl}
-        \item Need a way to specify conditions. Predicates over messages values?
-        \item Creates nondeterminism if multiple predicates are satisfied at the same time.
-      \end{lvl}
-  \end{outline}
-}
+A triggered event consists of two components:
+a predicate over a message list that determines when the event triggers,
+and a computation to run when the predicate is satisfied.
+Triggered events will be specified using the following switch-like syntax.
+\[
+  \{\ell_1.e_1, \dotsc, \ell_n.e_n\} \ColSend \ell ~\ChorFont{for~triggers}~ (P_1 \Rightarrow C_1) \dotsb (P_k \Rightarrow C_k)
+\]
+Here $P_1, \dotsc, P_k$ are the predicates and $C_1, \dotsc, C_k$ are choreographies
+specifying which computation to perform when the corresponding event triggers.
+Note that these are full choreographies, meaning they can involve computation by locations other than~$\ell$,
+but only~$\ell$ inherently knows which event triggered.
+Much like choreographic conditional statements, this creates a knowledge of choice problem~\ethan{cite?}.
+We will resolve this challenge using a generalization of the selection messages present in existing work~\citep[see, e.g.,][]{Montesi13,HirschG22,Montesi23,GraversenHM24}
+that selects between an arbitrary set of triggers, rather than only a two-way conditional branch.
+
+Note that trigger events are a strict generalization of the $k$-of-$n$ multi-receives proposed above.
+We can implement $\{\ell_1.e_1, \dotsc, \ell_n.e_n\} \multircv{k} \ell$ using triggers as
+\[
+  \{\ell_1.e_1, \dotsc, \ell_n.e_n\} \ColSend \ell ~\ChorFont{for~triggers}~ ((\programfont{length}~\mathit{msgs}) \geq k \Rightarrow \ell.\mathit{msgs}).
+\]
+However, the triggered events are considerably more expressive.
+A node in a BFT consensus protocol with the~$3f + 1$ nodes---the minimum to tolerate~$f$ failures---might trigger a commit
+when it receives~$f + 1$ votes for the same value.
+With dishonest nodes, that could occur as soon as $f + 1$ messages arrive, or as late as $2f + 1$ messages.
+Triggered events will thus provide developers a means to specify these conditions and allow nodes to proceed immediately when they are satisfied.
+
+We will explore several different aspects of triggered events.
+First, we will investigate how to specify the predicates.
+Predicates should be able to examine both location names and values that have arrived,
+making the local language of the choreography and obvious choice.
+However, it is not clear how the system should behave if a trigger predicate fails to terminate.
+We will therefore investigate if there are appropriate terminating languages for specifying predicates.
+
+A second question arises when predicates are not mutually exclusive.
+What should happen if multiple predicates are satisfied?
+The choreography could execute only the first event to trigger,
+and either choose nondeterministically if multiple triggers are satisfied simultaneously
+or require the choreography to specify a priority order.
+It could also execute all triggered events in some order.
+We will investigate which of these options is most appropriate,
+both by assessing their technical complexity and by surveying a variety of concurrent applications to determine their value to developers.
+
+\begin{goal}
+  \label{goal:multi-receive}
+  Design and implement a multi-receive feature for choreographies
+  where the recipient can proceed before all messages have arrived,
+  including by defining custom triggered events.
+\end{goal}
 
 %%% Local Variables:
 %%% mode: latex

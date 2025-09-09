@@ -215,11 +215,11 @@
 \newcommand{\ChorDef}{\mathrel{\ChorCol{\coloneqq}}}
 \newcommand{\ColSend}{\mathrel{\ChorCol{\sendsto}}}
 
-\newcommand{\multircv}[1][n]{\mathrel{\mathchoice%
-  {\mathord{\sendsto}\mkern-2mu\raisebox{0.125ex}{$\scriptstyle[#1]$}}
-  {\mathord{\sendsto}\mkern-2mu\raisebox{0.125ex}{$\scriptstyle[#1]$}}
-  {\mathord{\sendsto}\mkern-1mu\raisebox{0.1ex}{$\scriptstyle[#1]$}\mkern3mu}
-  {\mathord{\sendsto}\mkern-1mu\raisebox{0.05ex}{$\scriptstyle[#1]$}\mkern3mu}%
+\newcommand{\multircv}[2][chorcolor]{\mathrel{\mathchoice%
+  {\mathord{\color{#1}\sendsto}\mkern-2mu\raisebox{0.125ex}{$\scriptstyle{\color{#1}[}#2{\color{#1}]}$}}
+  {\mathord{\color{#1}\sendsto}\mkern-2mu\raisebox{0.125ex}{$\scriptstyle{\color{#1}[}#2{\color{#1}]}$}}
+  {\mathord{\color{#1}\sendsto}\mkern-1mu\raisebox{0.1ex}{$\scriptstyle{\color{#1}[}#2{\color{#1}]}$}\mkern3mu}
+  {\mathord{\color{#1}\sendsto}\mkern-1mu\raisebox{0.05ex}{$\scriptstyle{\color{#1}[}#2{\color{#1}]}$}\mkern3mu}%
 }}
 %\newcommand{\multircv}[1]{\mathrel{\overset{#1}{\sendsto}}}
 
