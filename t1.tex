@@ -261,6 +261,8 @@ The second new feature is a generalization of receiving a message that allows on
 Existing choreographies allow a single location to \emph{send} messages to multiple recipients in a single (choreographic) instruction~\citep{BatesK+25,SamuelsonHC25} (a broadcast),
 but no choreographies allow a single location to \emph{receive} messages from multiple senders as a single operation.
 
+\ethan{The version where all messages need to arrive is a synchronous gather operation (in the classic MPI sense). We need to mention that.}
+
 The power of this primitive becomes apparent when we require only a subset of the messages to arrive before the recipient can continue.
 This is a fundamental primitive currently missing from the choreographic literature that is necessary to build many systems,
 including distributed consensus protocols like Paxos~\citep{Lamport98}.
