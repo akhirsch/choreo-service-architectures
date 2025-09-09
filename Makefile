@@ -25,7 +25,7 @@ junk +=	*.aux *.log *.lof *.lot *.toc *.blg *.bbl *~ *.synctex.gz *.fdb_latexmk 
 $(main_pdf): $(pdfsb) desc.pdf
 	pdfjam $(pdfs) --outfile $(main_pdf)
 
-all: all references.pdf desc_no_refs.pdf
+all: all references.pdf desc_no_refs.pdf $(pdfs)
 
 desc_no_refs.pdf: desc.pdf
 	gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dFirstPage=1 -dLastPage=15 -sOUTPUTFILE=$(desc)_no_refs.pdf $(desc).pdf
@@ -72,7 +72,7 @@ cleanall:
 		-o -name '*.out'\
 		-o -name '*.pdf'\
 		-o -name '*.dvi'\
-		\) -type f -not -path "./.git/*" -not -path "./src/*" -not -name 'akh-cv.pdf' -not -name 'akh-cpos.pdf'\
+		\) -type f -not -path "./.git/*" -not -path "./src/*" -not -name 'akhirsch_biosketch.pdf' -not -name 'akh-cv.pdf' -not -name 'akh-cpos.pdf'\
 		-exec sh -c 'echo "REMOVING {}"; rm {}' ';';
 	@find . \( -name 'auto'\
 		-o -name '_minted*'\
