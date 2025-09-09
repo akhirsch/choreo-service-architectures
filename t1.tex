@@ -11,14 +11,14 @@ are needed to substantially broaden the range of possible choreographic applicat
 \subsubsection{Spawning New Locations}
 \label{sec:spawning}
 
-The first feature is the ability to spawn and kill new locations---computational units representing threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+The first feature is the ability to launch and terminate new locations---computational units representing threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
 a core feature of many concurrent systems.
 A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
 but those works lacked critical features for realistic programming, like higher-order operations,
 and required locations to be spawned only to execute specific pre-defined operations.
 
 We propose a much more general structure, where there is little distinction between an existing location and a newly-spawned one,
-and threads may be killed when they are no longer needed.
+and threads may exit when they are no longer needed.
 Moreover, we will integrate this dynamic location management with a host of modern choreographic advances,
 including higher-order functions and process polymorphism.
 
@@ -62,7 +62,7 @@ However, that work assumes the set of threads in the entire system is fixed,
 inherently preventing dynamically resizing the thread pool.
 \end{example}
 
-Safely spawning and killing locations in a choreography---be they threads, processes, or entire nodes---poses three distinct problems,
+Safely spawning and terminating locations in a choreography---be they threads, processes, or entire nodes---poses three distinct problems,
 all illustrated by the above example.
 \begin{enumerate}
   \item\label{spawn:li:name}
@@ -72,7 +72,7 @@ all illustrated by the above example.
     \textit{Example:} Clients of newly-spawned threads must know where to send their jobs.
 
   \item\label{spawn:li:kill}
-    If a location is killed, living locations must know not to send to or receive from the terminated location.
+    If a location terminates, living locations must know not to send to or receive from the terminated location.
     A retained reference to a dead name can result in a live location attempting to contact a dead one, producing deadlock.
 
     \textit{Example:} The pool manager and clients must properly discard all references to a killed thread.
@@ -93,8 +93,8 @@ Problems~\ref{spawn:li:kill} and~\ref{spawn:li:code}---both of which can cause d
 
 A key insight is that Problem~\ref{spawn:li:kill} closely resembles classic memory management concerns.
 Just as memory should not be referenced after being freed, lest the application crash or expose critical security vulnerabilities,
-locations should not be referenced after they are killed, lest the application deadlock.
-Similarly, if a location's computation has completed, it should be killed to avoid leaking resources,
+locations should not be referenced after they terminate, lest the application deadlock.
+Similarly, if a location's computation has completed, it should terminate to avoid leaking resources,
 just memory locations should be freed when their values are no longer needed.
 
 There are, however, two important differences between our setting and traditional memory management.
@@ -113,7 +113,7 @@ to control aliasing and more directly identify inaccessible locations.
 
 \begin{goal}
   \label{goal:spawn}
-  Design and implement dynamic location spawning and killing in choreographies while maintaining deadlock-freedom guarantees.
+  Design and implement dynamic location spawning and termination in choreographies while maintaining deadlock-freedom guarantees.
 \end{goal}
 
 \paragraph{Preliminary Work: Scoped Locations}
@@ -134,9 +134,9 @@ As above, $F$~is a local thunk specifying~\Client's computation.
   }
   \addtocounter{numlevels}{-1}
 \]
-This code specifies that the pool manager~$\Mngr$ forks a new thread,
-binds the name of that thread to~$T$, and sends it to the client~$\Client$.
-The client then sends its job to the thread who runs it and passes the result back to the client.
+In this code, the pool manager~$\Mngr$ forks a new thread,
+binds its name to the location variable~$T$, and sends it to the client~$\Client$.
+The client then sends its job to~$T$ who runs it and passes the result back to~$\Client$.
 
 Just as scoped memory management must ensure that references do not escape their scope through aliases or closures,
 we also need to ensure references to~$T$ remain confined.
@@ -146,7 +146,7 @@ we also need to ensure references to~$T$ remain confined.
 %While the scoping provides a syntactic boundary for when such a reference is safe,
 %it does not automatically guarantee that no thread can attempt to reference~$T$ after it dies.
 Consider the following choreography that forks a process and returns a function closing over its name: $\ForkIn{\Alice}{T}{\LamN \_\ldotp \Alice.42 \ColSend T}$.
-This function, if applied, would immediately cause deadlock, as~\Alice attempts to send~$42$ to a thread that is now dead.
+This function, if applied, would immediately cause deadlock, as~\Alice attempts to send~$42$ to a thread that is no longer running.
 
 Our preliminary work indicates that we can resolve this dilemma by tracking the locations involved in a function
 and verifying that any function returned from a~\ForkN block does not reference the spawned location.

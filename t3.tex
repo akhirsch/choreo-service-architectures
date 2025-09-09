@@ -1,5 +1,5 @@
 %thrust3.tex
-\subsection{Thrust 3 - Choreographic Services}
+\subsection{Thrust 3: Choreographic Services}
 \label{sec:t3}
 
 While choreographies in the state of the art excel at writing multiprocess programs, they are not able to express \emph{services}.
@@ -54,7 +54,7 @@ Instead, we simply define its in-order trace-collecting execution, and then cons
 
 We believe that this scheme works perfectly for terminating languages.
 However, nonterminating languages allow things to get hairier.
-Consider the choreography $\Alice.(\programfont{loop}\,()); \Bob.42 \ColSend \Cathy$.
+Consider the choreography $\Alice.(\programfont{loop}~()) \seq \Bob.42 \ColSend \Cathy$.
 In this program, \Alice{} enters an infinite loop ``and then'' \Bob{} sends 42 to \Cathy.
 If we were to use the scheme above using standard in-order trace-collecting execution, we would obtain a trace that consisted only \Alice{} in her loop.
 However, the projected program will have \Bob{} send 42 to \Cathy{} after some finite number of \Alice{}'s time around the loop.
@@ -63,7 +63,7 @@ The traces are no longer equivalent, and thus our proof technique fails.
 In order to combat this, we plan to create a new in-order trace-collecting semantics which allows for programs to ``continue after an infinite loop.''
 The traces collected by this semantics can have \emph{any} ordinal as their length, allowing us to make guarantees about \Bob{} and \Cathy{}'s projections in the program above.
 This requires significant care to develop.
-For instance, consider the choreography $\Alice.(\programfont{loop}\,()); \Alice.42 \ColSend \Bob$.
+For instance, consider the choreography $\Alice.(\programfont{loop}~()) \seq \Alice.42 \ColSend \Bob$.
 In this program, \Bob{} is waiting for a message from a process that is in an infinite loop, and therefore is equally ``blocked.''
 We must keep track of such ``blocked'' processes throughout the semantics.
 
@@ -140,7 +140,7 @@ However, the combined work of both PIs later showed that this solution breaks in
 Instead, they used a single simulation (rather than a \emph{bi}simulation) to argue for deadlock freedom; however, this means that other properties of the choreographic programming language cannot be cleanly lifted to the projected programs, as they can with a bisimulation argument.
 
 To see what goes wrong, consider the program
-$\Alice.\programfont{loop}; \Bob.42 \ColSend \Cathy$.
+$\Alice.\programfont{loop} \seq \Bob.42 \ColSend \Cathy$.
 In this program, \Alice{} goes into an infinite loop while \Bob{} sends $42$ to \Cathy{}.
 While \Alice{}'s instructions come before \Bob{}'s message to \Cathy{} in the choreography, because they involve disjoint sets of processes they are implicitly concurrent in the choreography.
 A bisimulation would require that any action of the projected programs can take place in the choreography.
