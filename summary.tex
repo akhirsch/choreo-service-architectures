@@ -1,20 +1,56 @@
 \input{header}
 
-
 \begin{document}
 
-\begin{center}
-{\LARGE \textsc{Project Summary}}
-\end{center}
-\hrule
+\section*{Project Summary}
 
-\vspace{3mm}
+\ethan{I pulled this structure from one of my other grants, but I'm wondering if it's a bit too cut-down.
+I think we have a bit of extra space, but I'm too tired to try to expand things right now.}
 
-\subsection*{Overview}  
+Choreographic programming is a new programming paradigm promising to simplify development of concurrent and distributed systems.
+Unlikely traditional paradigms where developers write one program for each system component (e.g., node, process, or thread)
+a choreography consists of a single top-level program that specifies the behaviors of each component and how they interact.
+This is a powerful new perspective, but existing choreographies still lack the flexibility to building many applications.
+
+A recent result by the PIs lays new groundwork to address these gaps.
+Choreographies can now specify programs that dynamically compute and communicate which party should perform a given task---%%%
+a feature known as first-class process polymorphism.
+This proposal \emph{leverages first-class process polymorphism to build crucial new features and the theory surrounding them},
+giving choreographies the ability to describe a much larger swath of systems and bringing them closer to their promise.
 
 \subsection*{Intellectual Merit}
 
+To expand the expressive power of choreographic programming, this project will
+(1)~develop a suite of important new features within the choreographic model,
+including \emph{dynamic thread spawning and killing}
+and threads waiting to receive a set of messages satisfying \emph{developer-specified requirements} before continuing,
+that are made possible by the machinery of first-class process polymorphism;
+(2)~\emph{eliminate substantial performance bottlenecks} associated with current implementations of process polymorphism
+and build a \emph{representative benchmark suite} to enable more rigorous performance analysis by the entire choreographic programming community;
+and (3)~develop new fundamental theory to enable \emph{choreographic services},
+processes that receive and process messages from arbitrary clients without knowing a client's identity before a request arrives.
+
+The outcomes of this proposal will include novel choreographic features and theory needed to prove
+important correctness properties about those features, improved performance of choreographic implementations,
+and a public benchmark suite for compilation of process polymorphism.
+The PIs bring together a proven track record of fruitful collaboration
+and substantial expertise in choreographies, programming languages theory, and how to apply it to systems.
+
 \subsection*{Broader Impacts}
+
+If successful, this research will significantly expand the expressive power of choreographic programming.
+It will remove a chore barrier impeding the use of choreographic techniques for practical concurrent and distributed systems
+and create a foundation for future research in both programming languages and concurrent systems.
+It will also produce improvements to nascent choreographic compiler technology
+and the first public benchmark suite specifically to measure choreographic compiler performance.
+
+Creating more practical choreographic technology, including concrete implementation work,
+will enable teaching undergraduate and graduate students about this emerging new paradigm
+and create research opportunities for undergraduate students.
+PI Cecchetti will incorporate choreographic theories into his ``Principles of Programming Languages'' class at UW--Madison,
+and PI Hirsch will \todo{whatever Andrew will teach about choreographies here}.
+Further impact will come from added undergraduate involvement in PI Hirsch's ongoing project
+to develop a choreographic compiler implementation.
 
 \end{document}
 
