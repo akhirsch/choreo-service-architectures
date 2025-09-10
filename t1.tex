@@ -172,88 +172,6 @@ The first option would require existing locations to keep extra copies of the en
 The second would need static verification that existing locations only attempt to interact with a new party
 in accordance with the code it is provided, which would require statically tracking what different locations are able to do.
 
-\iffalse
-% This is a bunch of stuff I wrote before we realized it was all memory management.
-% I'm leaving it for now because it was never in git before
-
-\paragraph{Proposed Work: Linear Locations with Fractional Permissions}
-The scoped-based process forking described above allows for any application that spawns new locations to handle individual tasks.
-While many such applications exist---making it a powerful addition to the choreographic toolbox---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
-some systems require dynamic locations with indefinite lifetimes.
-For example, the thread pool may not wish to spawn additional threads only for a single task,
-but instead simply increase the pool capacity when demand is high
-and be willing to kill any thread that happens to be idle when demand is low.
-
-To support this more flexible mode of dynamic locations, we propose a second, complementary approach to
-ensuring terminated threads are not referenced---and thus do not cause deadlock.
-Specifically, we propose tracking locations linearly in a type system.
-
-Linear types~\todo{cite} are a way of ensuring that values are used exactly once.
-They are common when tracking resources, such as money, that cannot be safely created or destroyed~\citep{move-lang,CoblenzOE+20,DasBHPS21}.
-Operations using linear values consume them, but may create a new reference if they are still usable afterward.
-
-We propose to apply this idea to spawned location in choreographies,
-allows us to correctly track which locations exist without confining them to a syntactic program scope.
-In particular, if location names are linear, then only one reference to each location can exist at a time.
-When a location is involved in a normal operation after which it continues executing---message sending or local computation---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
-the choreography can simply produce another reference to the same location, indicating that it can be used again.
-When a location is killed, however, such as a thread pool manager culling unneeded threads,
-that instruction consumes the only reference to the location, correctly rendering inaccessible to the rest of the program.
-
-This approach allows us to implement the dynamic thread pool described above.
-Upon spawning a thread, \Mngr~adds the linear reference to that thread to the pool.
-When assigning a job, \Mngr~passes the linear reference to~\Client, removing it from the pool.
-After a job is complete, \Client~returns the linear reference to~\Mngr, ensuring that they will not reference the thread again,
-and~\Mngr can either place it back in the pool or kill it.
-
-\ethan{
-  Interesting point I want to make, but I'm not sure how:
-  linearity is not uncommon in concurrent settings to prevent things like race conditions.
-  In those contexts, the object belongs to one thread at a time, and they can pass it around (basically just ownership).
-  That's \emph{not} what we need here.
-  We don't care if multiple locations are talking to this one linear location at a time,
-  we care that we can track what part of the \emph{code} the location exists in
-  so that we know we can't kill it and still have it exist somewhere else.
-  It's essentially just an alias analysis.
-}
-
-\paragraph{Fractional Permissions}
-One severe limitation of the linear locations described above is that a location can only exist in one context at a time.
-That restriction prevents (non-linear) functions from closing over location names
-or from multiple independent parties from concurrently 
-
-Specifically, we propose tracking fractional resources using a linear type system.
-
-Fractional resource tracking dates back over 20 years~\citep{Boyland03,BornatCOP05}
-
-\ethan{Things we need to discuss:
-\begin{outline}{}
-  \item What is fractional permission tracking?
-  \item How is it used?
-    \begin{lvl}
-      \item Referencing location needs non-zero permission
-      \item Killing location consumes full permission
-      \item Connects to scoped locations by tracking permissions used in function types
-    \end{lvl}
-  \item How do we know what code to give a new location?
-    \begin{lvl}
-      \item This is a core research question of this sub-thrust
-      \item Might tie into wait-until-called stuff in Thrust 3?
-        If we give it wait-until-called code, it's obvious what it needs to do and how to use it.
-    \end{lvl}
-\end{outline}}
-
-%\ethan{There are multiple problems to consider here.
-%\begin{enumerate}[nosep]
-%  \item How does the new location know what code to execute?
-%  \item If you kill a location, how do you make sure you don't reference it again?
-%    This comes in two different forms: regular instructions, and killing it twice.
-%\end{enumerate}
-%We propose two ways of handling this: scoping and linearity.
-%We have preliminary work showing how to make scoping work, but it's missing some important features (e.g., thread pools).
-%We will finish that and figure out to make linearity work.}
-\fi
-
 \subsubsection{Message Multi-Receives}
 \label{sec:multi-receive}
 
@@ -300,7 +218,7 @@ Here $P_1, \dotsc, P_k$ are the predicates and $C_1, \dotsc, C_k$ are choreograp
 specifying which computation to perform when the corresponding event triggers.
 Note that these are full choreographies, meaning they can involve computation by locations other than~$\ell$,
 but only~$\ell$ inherently knows which event triggered.
-Much like choreographic conditional statements, this creates a knowledge of choice problem~\ethan{cite?}.
+Much like choreographic conditional statements, this creates a knowledge of choice problem~\citep{Montesi23}.
 We will resolve this challenge using a generalization of the selection messages present in existing work~\citep[see, e.g.,][]{Montesi13,HirschG22,Montesi23,GraversenHM24}
 that selects between an arbitrary set of triggers, rather than only a two-way conditional branch.
 

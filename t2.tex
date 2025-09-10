@@ -142,8 +142,8 @@ so those are the only locations that can be in~$\rho_1$, $\rho_2$, and~$\rho_3$.
 Note that tracking this information through polymorphic function calls becomes considerably more complicated.
 
 We will investigate multiple static analysis techniques in the literature that appear suited to provide the information needed for this optimization.
-In particular, abstract interpretation~\todo{cite Cousot and Cousot?}, type-and-effect systems~\todo{cite},
-and refinement types~\todo{cite} can all track which locations might be in a given set.
+In particular, abstract interpretation~\citep{CousotC77}, type-and-effect systems~\citep{NielsonN99}
+and refinement types~\citep{FreemanP91} can all track which locations might be in a given set.
 We plan to investigate each as possibilities.
 By providing EPP with information about which locations might be in each set,
 we can optimize the projection to only produce necessary \AmIN statements,
