@@ -12,8 +12,8 @@ LATEXMK := latexmk -lualatex -bibtex -synctex=1
 # The list of pdfs that we need to generate separately in the order of
 # appearance in the main pdf
 desc = desc
-pdfs = $(desc).pdf budget.pdf facilities.pdf data.pdf personnel.pdf summary.pdf mentoring.pdf akh-synergistic.pdf
-pdfsb = budget.pdf facilities.pdf data.pdf personnel.pdf summary.pdf mentoring.pdf akh-synergistic.pdf
+pdfs = $(desc).pdf akh-budget.pdf akh-facilities.pdf data.pdf personnel.pdf summary.pdf mentoring.pdf akh-synergistic.pdf
+pdfsb = akh-budget.pdf akh-facilities.pdf data.pdf personnel.pdf summary.pdf mentoring.pdf akh-synergistic.pdf
 
 # look for files
 find = $(foreach dir,$(1),$(wildcard $(dir)/*.$(2)))
