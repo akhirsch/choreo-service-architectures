@@ -2,47 +2,44 @@
 \section{Preliminaries}
 \label{sec:background}
 
-\emph{Choreographic programming} is an emerging paradigm for concurrent programming which guarantees deadlock freedom by adopting a \emph{global} view of programs.
-Rather than writing a program for each thread in a system, a programmer writes one program (the \emph{choreography}) that describes the actions of all of the processes in a system.
+\emph{Choreographic programming} is an emerging paradigm for concurrency which adopts a \emph{global} view of programs and thereby guarantees that programs cannot deadlock.
+The programmer writes a \emph{choreography}, which is a single program describing the actions of all of the processes in a system.
 Here, processes are any components of a system which act concurrently, and can include threads, nodes in a distributed system, and operating-system processes.
-A process called \emph{endpoint projection (EPP)} then produces code for each process.
-Because the processes' actions are determined by the choreography, their send- and receive actions cannot be mismatched, and thus the projected program cannot deadlock.
+A procedure called \emph{endpoint projection (EPP)} then produces the code for each process that the programmer would traditionally write by hand.
+Because the processes' actions are determined by this global program, the projected program cannot deadlock.
 
-The key ingredient in choreographic programming is a single send-and-receive operation, written $\ColSend$.
-For instance, the choreography $\Alice.42 \ColSend \Bob$ consists of an process~\Alice{} sending the message $42$ to another process~\Bob.
-Endpoint projection would produce two programs, one for \Alice{} ($\textsf{send}~42 \mathrel{\textsf{to}} \Bob$) and one for \Bob{} ($\textsf{receive} \mathrel{\textsf{from}} \Alice$).
-Note that these programs are \emph{dual}: the send instruction on \Alice{} is matched with a receive instruction on \Bob{}.
-Thus, these programs can never deadlock.
+The key to choreographic deadlock freedom is to restrict communication in choreographies to a single send-and-receive operation.
+For instance, the choreography $\Alice.42 \ColSend \Bob$ says that the process~\Alice{} should send the message $42$ the process~\Bob, who should receive it.
+Endpoint projecting this choreography produces two programs: one for \Alice{} ($\textsf{send}~42 \mathrel{\textsf{to}} \Bob$) and one for \Bob{} ($\textsf{receive} \mathrel{\textsf{from}} \Alice$).
+Note that every time one process sends, the other receives, and thus these programs never deadlock.
 
-One of the biggest challenges in choreographic programming comes from branching: when a choreography branches based on data owned by one particular process, this may change the interactions of other processes as well.
+Branching poses a big challenge to choreographic programming.
+When a single process's data determines the behavior of an entire choreography, every other process must be aware of the choices made at the global level.
 To see this, consider the program
 $$
   \textsf{if}\;\Alice.b
   \mathrel{\textsf{then}} \Bob.42 \ColSend \Cathy\\
   \mathrel{\textsf{else}} \Dave.42 \ColSend \Eve
 $$
-This choreography branches based on the value $\Alice.b$, which is a Boolean value owned by the process \Alice{}.
-For instance, \Alice{} may be a thread storing the value of $b$ in its memory.
+This choreography branches based on \Alice{}'s boolean value~$b$.
 If this value is \textsf{true}, then \Bob{} must send a value to \Cathy{}, otherwise \Dave{} must send a value to \Eve{}.
-
-This choreography poses a big problem: how do \Bob{} and \Dave{} decide whether they are sending a value?
-How do \Cathy{} and \Eve{} decide whether to wait for a value to appear?
+Now, \Bob{} and \Dave{} must each decide whether they are sending a value, while \Cathy{} and \Eve{} must each decide whether to wait for a value to appear.
 Three potential answers occur in the current research: we can reject this program entirely, we can require that the programmer explicitly insert notifications sent from \Alice{} to the other participants, or the compiler can implicitly insert those notifications.
-In this project we plan to take the first approach, allowing programmers to specify arbitrary patterns of notifications.
+In this project we plan to take the second approach, allowing programmers to specify arbitrary patterns of notifications.
 
-Contrast the choreographic approach to concurrent programming with the ``traditional'' approach, wherein a programmer writes a program for every process individually.
+Contrast choreographic programming with the ``traditional'' approach to concurrency, wherein a programmer writes a program for every process individually.
 In the traditional approach, the programmer must take care not to allow any mismatch of communication patterns or risk deadlock.
 \emph{Session types}, which allow a programmer to specify the interactions they expect to hold~\cite{DeYoungCPT09,CairesP10,GayV10,Wadler12,ScalasY19}, can help mitigate this risk.
 By checking that an process's program matches the session type and that different processes have compatible session types, the programmer can again be sure that their program will not deadlock.
 However, this now requires writing subtle specifications and potentially debugging complicated mismatches of interactions between disparate programs.
 In the choreographic setting, writing such a mismatched interaction is impossible.
 
-Recently, a slate of papers studying \emph{higher-order choreographies} has started to appear~\cite{GraversenHM24,GiallorenzoMP23,CruzFilipeGLMP22,HirschG22,ShenKK23,SamuelsonHC25}.
-In particular, PI~Hirsch invented \emph{functional} choreographic programming, introducing a new language called Pirouette~\cite{HirschG22}.
-Pirouette demonstrated a mixture of choreographic primitives (particularly the choreographic send-and-receive primitive) and $\lambda$~calculus, thus allowing reuse of choreographic programs.
-
+Recently, there has been significant interest in \emph{higher-order choreographic programming}~\cite{GraversenHM24,GiallorenzoMP23,CruzFilipeGLMP22,HirschG22,ShenKK23,SamuelsonHC25}.
+In particular, PI~Hirsch introduced \emph{functional} choreographic programming through Pirouette~\cite{HirschG22}.
 More recently, PI~Hirsch introduced \emph{process polymorphism}~\cite{GraversenHM24}, which allows choreographic functions to be written for \emph{any} process, rather than requiring that the process be determined when the function is declared.
-In follow-up work, PI~Hirsch and PI~Cecchetti collaborated to introduce \emph{first-class process polymorphism}~\cite{SamuelsonHC25} which allows process names to be computed at runtime and sent as messages.
+PI~Hirsch and PI~Cecchetti then collaborated to introduce \emph{first-class process polymorphism}~\cite{SamuelsonHC25} which allows process names to be computed at runtime and sent as messages.
+This greatly increases the reusability of choreographic programs, making choreographies amenable to modern software-engineering techniques.
+
 
 %%% Local Variables:
 %%% mode: latex
