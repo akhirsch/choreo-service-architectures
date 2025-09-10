@@ -8,14 +8,14 @@
 I think we have a bit of extra space, but I'm too tired to try to expand things right now.}
 
 Choreographic programming is a new programming paradigm promising to simplify development of concurrent and distributed systems.
-Unlikely traditional paradigms where developers write one program for each system component (e.g., node, process, or thread)
+Unlike traditional paradigms where developers write one program for each system component (e.g., node, process, or thread),
 a choreography consists of a single top-level program that specifies the behaviors of each component and how they interact.
-This is a powerful new perspective, but existing choreographies still lack the flexibility to building many applications.
+This is a powerful new perspective, but existing choreographies still lack the flexibility to express many common patterns in concurrent applications.
 
 A recent result by the PIs lays new groundwork to address these gaps.
 Choreographies can now specify programs that dynamically compute and communicate which party should perform a given task---%%%
 a feature known as first-class process polymorphism.
-This proposal \emph{leverages first-class process polymorphism to build crucial new features and the theory surrounding them},
+This proposal \emph{leverages first-class process polymorphism to design and implement crucial new features and develop the theory surrounding them},
 giving choreographies the ability to describe a much larger swath of systems and bringing them closer to their promise.
 
 \subsection*{Intellectual Merit}
@@ -39,18 +39,18 @@ and substantial expertise in choreographies, programming languages theory, and h
 \subsection*{Broader Impacts}
 
 If successful, this research will significantly expand the expressive power of choreographic programming.
-It will remove a chore barrier impeding the use of choreographic techniques for practical concurrent and distributed systems
-and create a foundation for future research in both programming languages and concurrent systems.
+It will remove a core barrier impeding the use of choreographic techniques for practical concurrent and distributed systems
+and create a foundation for future research in both programming languages and concurrent programs.
 It will also produce improvements to nascent choreographic compiler technology
 and the first public benchmark suite specifically to measure choreographic compiler performance.
 
 Creating more practical choreographic technology, including concrete implementation work,
 will enable teaching undergraduate and graduate students about this emerging new paradigm
 and create research opportunities for undergraduate students.
-PI Cecchetti will incorporate choreographic theories into his ``Principles of Programming Languages'' class at UW--Madison,
-and PI Hirsch will \todo{whatever Andrew will teach about choreographies here}.
-Further impact will come from added undergraduate involvement in PI Hirsch's ongoing project
-to develop a choreographic compiler implementation.
+PI~Cecchetti will incorporate choreographic theories into his ``Principles of Programming Languages'' class at UW--Madison,
+and PI~Hirsch will involve undergraduates in the implementation components of this research as part of the University at Buffalo's ``Experiential Learning and Research'' course.
+This course allows undergraduate students to work with faculty in small teams over three semesters on a project.
+As part of this program, PI~Hirsch teaches undergraduates about choreographic programming, concurrency, compilers, and functional programming.
 
 \end{document}
 
