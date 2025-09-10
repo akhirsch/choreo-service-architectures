@@ -25,7 +25,7 @@ junk +=	*.aux *.log *.lof *.lot *.toc *.blg *.bbl *~ *.synctex.gz *.fdb_latexmk 
 $(main_pdf): $(pdfsb) desc.pdf
 	pdfjam $(pdfs) --outfile $(main_pdf)
 
-all: all references.pdf desc_no_refs.pdf $(pdfs)
+all: references.pdf desc_no_refs.pdf $(pdfs)
 
 desc_no_refs.pdf: desc.pdf
 	gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dFirstPage=1 -dLastPage=15 -sOUTPUTFILE=$(desc)_no_refs.pdf $(desc).pdf
