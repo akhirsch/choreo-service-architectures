@@ -34,6 +34,19 @@
 \usepackage{float}
 \usepackage[font=small]{caption}
 \usepackage[table,dvipsnames]{xcolor}
+\usepackage{tikz}
+\usepackage{pgfgantt}
+
+\usetikzlibrary{math}
+\usetikzlibrary{patterns.meta}
+
+\colorlet{darkpink}{red!60!purple!50}
+\colorlet{lightpurple}{purple!70!blue!100}
+\colorlet{teal}{green!70!blue!90}
+\colorlet{darkgreen}{green!40!black!100}
+\colorlet{orange}{orange!70!red!80}
+
+\usepackage{color}
 
 \setlist[itemize,enumerate]{
   itemsep=0pt,
@@ -301,6 +314,94 @@
 }{\end{outline}\end{boxedminipage}\vspace{0.5em}\par}
 \makeatother
 
+% from: https://tex.stackexchange.com/questions/629188/gantt-bars-with-multicolour-diagonal-stripes
+\makeatletter
+\newlength\pgf@pat@distance % or defined by the more portable \newdimen
+
+% based on pattern `Lines`, defined in pgflibrarypatterns.meta.code.tex
+\pgfdeclarepattern{
+  name=Stripes,
+  type=colored,
+  parameters={
+      \pgfkeysvalueof{/pgf/pattern keys/distance},
+      \pgfkeysvalueof{/pgf/pattern keys/angle},
+      \pgfkeysvalueof{/pgf/pattern keys/xshift},
+      \pgfkeysvalueof{/pgf/pattern keys/yshift},
+      \pgfkeysvalueof{/pgf/pattern keys/color series},
+  },
+  bottom left={%
+    \pgfpoint{-.5*\pgf@pat@distance}{-.5*\pgf@pat@distance}},
+  top right={%
+    \pgfpoint{.5*\pgf@pat@distance}{.5*\pgf@pat@distance}},
+  tile size={%
+    \pgfpoint
+      {\pgfkeysvalueof{/pgf/pattern keys/distance}}%
+      {\pgfkeysvalueof{/pgf/pattern keys/distance}}},
+  tile transformation={%
+    \pgftransformshift{%
+      \pgfpoint
+        {\pgfkeysvalueof{/pgf/pattern keys/xshift}}%
+        {\pgfkeysvalueof{/pgf/pattern keys/yshift}}}%
+    \pgftransformrotate{\pgfkeysvalueof{/pgf/pattern keys/angle}}},
+  defaults={
+    distance/.initial=6pt,
+    angle/.initial=0,
+    xshift/.initial=0pt,
+    yshift/.initial=0pt,
+    color series/.initial={red,green,blue},
+  },
+  code={%
+    \pgf@pat@colorseries@parse
+    % set line width
+    \pgfsetlinewidth{\pgf@pat@distance/\pgfutil@tempcnta}%
+    % \pgfutil@tempdima holds the y-coord of a stripe
+    \pgfutil@tempdima=\dimexpr-.5\pgf@pat@distance+.5\pgflinewidth\relax
+    % draw stripes
+    \pgfutil@tempcnta=0
+    \pgfutil@for\pgf@pat@temp:=\pgf@pat@colorseries\do{%
+      \ifx\pgf@pat@temp\pgfutil@empty
+      \else
+        \pgfsetstrokecolor{\pgf@pat@temp}%
+        \pgfpathmoveto{%
+          \pgfpoint{-.5*\pgf@pat@distance}{\pgfutil@tempdima}}%
+        \pgfpathlineto{%
+          \pgfpoint{ .5*\pgf@pat@distance}{\pgfutil@tempdima}}%
+        \pgfusepath{stroke}%
+        \advance\pgfutil@tempdima\pgflinewidth
+      \fi
+    }%
+  },
+  set up code={%
+    \pgfmathsetlength{\pgf@pat@distance}{\pgfkeysvalueof{/pgf/pattern keys/distance}}%
+  }
+}
+
+% util
+\def\pgf@pat@colorseries@parse{%
+  % prepare \pgf@pat@colorseries and store its length in \pgfutil@tempcnta
+  \let\pgf@pat@colorseries\pgfutil@empty
+  \pgfutil@tempcnta=0
+  \pgfkeysgetvalue{/pgf/pattern keys/color series}{\pgf@pat@colorseries@temp}%
+  \pgfutil@for\pgf@temp:=\pgf@pat@colorseries@temp\do{%
+    % strip spaces around color names and skip empty items
+    % the total effect is to convert `red, blue,, cyan` to `red,blue,cyan`
+    \expandafter\pgfkeys@spdef\expandafter\pgf@temp\expandafter{\pgf@temp}%
+    \ifx\pgf@temp\pgfutil@empty
+    \else
+      \edef\pgf@pat@colorseries{%
+        \unexpanded\expandafter{\pgf@pat@colorseries},%
+        \unexpanded\expandafter{\pgf@temp}}%
+      \advance\pgfutil@tempcnta by 1
+    \fi
+  }%
+  % ensure the resulting color series is never empty
+  \ifnum\pgfutil@tempcnta=0
+    \def\pgf@pat@colorseries{red,green,blue}%
+  \fi
+}
+\makeatother
+
+    
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "desc"
