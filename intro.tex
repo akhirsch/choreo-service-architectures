@@ -133,13 +133,13 @@ that each rule out many common architectures, including thread pools, consensus 
     The senders and recipients of each message must be know to all relevant parties in advance.
 \end{enumerate}
 
-A recent result by both PIs showing how to safely enable first-class location polymorphism~\citep{SamuelsonHC25} opens critical new avenues for research alleviating those assumptions.
+A recent result by both PIs showing how to safely enable first-class process polymorphism~\citep{SamuelsonHC25} opens critical new avenues for research alleviating those assumptions.
 Choreographies can now dynamically compute and communicate which location(s) will perform any given action,
 allowing run-time flexibility and increased code reuse.
 On its own, this result is an important addition to the choreographic toolbox,
 but its real power lies in creating a foundation to accelerate advances in choreographic technology.
 
-\emph{We propose to leverage location polymorphism to develop substantial new theory and implementation techniques, bringing the choreographic programming paradigm closer to its promise.}
+\emph{We propose to leverage process polymorphism to develop substantial new theory and implementation techniques, bringing the choreographic programming paradigm closer to its promise.}
 Guiding this work will be the goal of enabling choreographies to specify common concurrent and distributed systems as choreographies.
 This is not possible currently, as many systems violate the assumptions above.
 Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
