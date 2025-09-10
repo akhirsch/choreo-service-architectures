@@ -5,6 +5,7 @@
 
 The work plan for this project is given in Figure~\ref{fig:workplan} in a quarterly breakdown based on the research goals listed for each research thrust in section~\ref{sec:research}.
 The goals found in \hyperref[sec:t1]{Thrust~1} are in \textcolor{cyan}{cyan}, the goals found in \hyperref[sec:t2]{Thrust~2} are in \textcolor{green}{green}, and the goal found in \hyperref[sec:t3]{Thrust~3} are in \textcolor{magenta}{magenta}.
+Solid bars indicate more effort.
 
 \begin{figure*}
   \centering
@@ -12,23 +13,30 @@ The goals found in \hyperref[sec:t1]{Thrust~1} are in \textcolor{cyan}{cyan}, th
   \pgfqkeys{/pgfgantt}{
     bar pattern/.style={
       bar/.append style={
-        pattern={Stripes[angle=45,distance=15pt,color series={#1}]}
-      }
+        pattern={Stripes[angle=45,distance=5pt,color series={#1}]}
+      },
     },
     bar pattern/.default={red,green,blue},
   }
-  \begin{ganttchart}[hgrid=true,vgrid=true,x unit=2.5em, y unit chart=1em, bar height=.6, bar top shift=0.2]{1}{12}
+  \begin{ganttchart}[hgrid=true,vgrid=true,x unit=2.5em, y unit chart=1.2em, bar height=.6, bar top shift=0.2]{1}{12}
     \gantttitlelist[title list options={var=\y, evaluate=\y as \x using "Year \y"}]{1,...,3}{4}\\
     % Repeats 3 times, once for each year
     \foreach \i in {1,...,3} {
       \gantttitlelist[title list options={var=\y, evaluate=\y as \x using "Q \y"}]{1,...,4}{1}
     }\\
-    \ganttbar[bar pattern={cyan}]{\hyperref[goal:spawn]{Goal 1 (Spawning Threads)}}{1}{4}\\
-    \ganttbar[bar pattern={cyan}]{\hyperref[goal:multirecv]{Goal 2 (Multireceive)}}{4}{8}\\
-    \ganttbar[bar pattern={green}]{\hyperref[goal:opt-epp]{Goal 3 (EPP Optimization)}}{7}{11}\\
-    \ganttbar[bar pattern={green}]{\hyperref[goal:benchmark]{Goal 4 (Benchmark)}}{8}{12}\\
-    \ganttbar[bar pattern={magenta}]{\hyperref[goal:strong-epp]{Goal 5 (New Bisimulations)}}{1}{6}\\
-    \ganttbar[bar pattern={magenta}]{\hyperref[goal:wait-until-called]{Goal 6 (Service Functions)}}{8}{12}\\
+    \ganttbar[bar pattern={cyan}]{\hyperref[goal:spawn]{\small Goal 1 (Spawning Threads)}}{1}{3}
+    \ganttbar[bar pattern={cyan,white}]{}{4}{4}\\
+    \ganttbar[bar pattern={cyan,white}]{\hyperref[goal:multirecv]{\small Goal 2 (Multireceive)}}{3}{3}
+    \ganttbar[bar pattern={cyan}]{}{4}{8}
+    \ganttbar[bar pattern={cyan,white}]{}{8}{8}\\
+    \ganttbar[bar pattern={green,white}]{\hyperref[goal:opt-epp]{\small Goal 3 (EPP Optimization)}}{5}{5}
+    \ganttbar[bar pattern={green}]{}{6}{10}
+    \ganttbar[bar pattern={green,white}]{}{11}{11}\\
+    \ganttbar[bar pattern={green}]{\hyperref[goal:benchmark]{\small Goal 4 (Benchmark)}}{8}{12}\\
+    \ganttbar[bar pattern={magenta}]{\hyperref[goal:strong-epp]{\small Goal 5 (New Bisimulations)}}{1}{6}
+    \ganttbar[bar pattern={magenta,white}]{}{7}{7}\\
+    \ganttbar[bar pattern={magenta,white}]{\hyperref[goal:wait-until-called]{\small Goal 6 (Service Functions)}}{7}{7}
+    \ganttbar[bar pattern={magenta}]{}{8}{12}
   \end{ganttchart}
 %  \includegraphics[width=.7\linewidth]{GANTchart.png}
 \caption{The proposed work plan split into quarterly tasks for the duration of the grant period.}
@@ -43,7 +51,8 @@ We thus sequentialize them, overlapping by one quarter to represent beginning th
 
 We save the implementation tasks (Goals~\ref{goal:opt-epp} and~\ref{goal:benchmark}) to the end of the grant period so that we can implement as many of the features we plan to develop as possible.
 We can also start to assemble a benchmark (Goal~\ref{goal:benchmark}) almost immediately after we begin implementation.
-This is seen in Figure~\ref{fig:workplan} by the bar for Goal~\ref{goal:benchmark} starting in Year 2, Quarter 4, while the bar for the main implementation goal (Goal~\ref{goal:opt-epp}) begins one quarter earlier.
+This is seen in Figure~\ref{fig:workplan} by the bar for Goal~\ref{goal:benchmark} starting in Year 2, Quarter 4, while the bar for the main implementation goal (Goal~\ref{goal:opt-epp}) begins two quarters earlier.
+The first quarter we expect to be fully devoted to the development of the theory, while the second quarter we will begin work on the implementation.
 
 %%% Local Variables:
 %%% mode: latex
