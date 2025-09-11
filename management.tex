@@ -11,12 +11,12 @@ Solid bars indicate more effort.
   \centering
   %from https://tex.stackexchange.com/questions/629188/gantt-bars-with-multicolour-diagonal-stripes
   \pgfqkeys{/pgfgantt}{
-    bar pattern/.style={
+    solid/.style={bar/.append style={fill={#1}}},
+    striped/.style={
       bar/.append style={
         pattern={Stripes[angle=45,distance=5pt,color series={#1}]}
       },
     },
-    bar pattern/.default={red,green,blue},
   }
   \begin{ganttchart}[hgrid=true,vgrid=true,x unit=2.5em, y unit chart=1.2em, bar height=.6, bar top shift=0.2]{1}{12}
     \gantttitlelist[title list options={var=\y, evaluate=\y as \x using "Year \y"}]{1,...,3}{4}\\
@@ -24,19 +24,19 @@ Solid bars indicate more effort.
     \foreach \i in {1,...,3} {
       \gantttitlelist[title list options={var=\y, evaluate=\y as \x using "Q \y"}]{1,...,4}{1}
     }\\
-    \ganttbar[bar pattern={cyan}]{\hyperref[goal:spawn]{\small Goal 1 (Spawning Threads)}}{1}{3}
-    \ganttbar[bar pattern={cyan,white}]{}{4}{4}\\
-    \ganttbar[bar pattern={cyan,white}]{\hyperref[goal:multirecv]{\small Goal 2 (Multireceive)}}{3}{3}
-    \ganttbar[bar pattern={cyan}]{}{4}{8}
-    \ganttbar[bar pattern={cyan,white}]{}{8}{8}\\
-    \ganttbar[bar pattern={green,white}]{\hyperref[goal:opt-epp]{\small Goal 3 (EPP Optimization)}}{5}{5}
-    \ganttbar[bar pattern={green}]{}{6}{10}
-    \ganttbar[bar pattern={green,white}]{}{11}{11}\\
-    \ganttbar[bar pattern={green}]{\hyperref[goal:benchmark]{\small Goal 4 (Benchmark)}}{8}{12}\\
-    \ganttbar[bar pattern={magenta}]{\hyperref[goal:strong-epp]{\small Goal 5 (New Bisimulations)}}{1}{6}
-    \ganttbar[bar pattern={magenta,white}]{}{7}{7}\\
-    \ganttbar[bar pattern={magenta,white}]{\hyperref[goal:wait-until-called]{\small Goal 6 (Service Functions)}}{7}{7}
-    \ganttbar[bar pattern={magenta}]{}{8}{12}
+    \ganttbar[solid={cyan}]{\hyperref[goal:spawn]{\small Goal 1 (Spawning Threads)}}{1}{3}
+    \ganttbar[striped={cyan,white}]{}{4}{4}\\
+    \ganttbar[striped={cyan,white}]{\hyperref[goal:multirecv]{\small Goal 2 (Multireceive)}}{3}{3}
+    \ganttbar[solid={cyan}]{}{4}{8}
+    \ganttbar[striped={cyan,white}]{}{8}{8}\\
+    \ganttbar[striped={green,white}]{\hyperref[goal:opt-epp]{\small Goal 3 (EPP Optimization)}}{5}{5}
+    \ganttbar[solid={green}]{}{6}{10}
+    \ganttbar[striped={green,white}]{}{11}{11}\\
+    \ganttbar[solid={green}]{\hyperref[goal:benchmark]{\small Goal 4 (Benchmark)}}{8}{12}\\
+    \ganttbar[solid={magenta}]{\hyperref[goal:strong-epp]{\small Goal 5 (New Bisimulations)}}{1}{6}
+    \ganttbar[striped={magenta,white}]{}{7}{7}\\
+    \ganttbar[striped={magenta,white}]{\hyperref[goal:wait-until-called]{\small Goal 6 (Service Functions)}}{7}{7}
+    \ganttbar[solid={magenta}]{}{8}{12}
   \end{ganttchart}
 %  \includegraphics[width=.7\linewidth]{GANTchart.png}
 \caption{The proposed work plan split into quarterly tasks for the duration of the grant period.}
