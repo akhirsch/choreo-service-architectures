@@ -4,105 +4,9 @@
 \section{Project Description}
 \label{sec:intro}
 
-\iffalse
-\begin{outline}{Introduction Outline}
-  \item Programming concurrent and distributed systems correctly is hard, but choreographies can help!
-    \begin{lvl}
-      \item A major promise of choreographies is that the implementation of a protocol
-        can directly mirror the structure of a protocol specification.
-      \item This idea simplifies system building, helps with rapid prototyping, and simplifies checking that the implementation matches the spec.
-    \end{lvl}
-
-    \item State-of-the-art choreographies are missing critical features needed to accomplish this goal.
-    \begin{lvl}
-      \item Common systems with complex protocols include
-        web servers, microservice architectures, distributed consensus protocols (e.g., Paxos), and thread pools.
-        \ethan{I'm not sure we want to talk about Paxos if we're not doing asynchrony.}
-      \item None of these can be implemented with current choreographic technology for a fundamental reason:
-        every message must be sent and received in a pre-determined order by a pre-determined set of locations,
-        and all parties must know each other's identities \emph{in advance}.
-      \item The above protocols violate these assumptions in multiple ways.
-        \begin{lvl}
-          \item They wait for messages that may arrive at any time (or not at all) without knowing when.
-          \item Messages may come from any client, and the recipient only learns the client's identity with the message arrives.
-          \item They execute in response to one or more messages arriving, and may do so an unbounded number of times.
-          \item Nodes/threads/processes/etc are often spawned dynamically in response to requests
-            with identities that cannot be known in advance.
-            \ethan{We've partially solved this one already!}
-%          \item Web servers wait for a message from any (unknown) client.
-%          \item Microservices are similar, but may only accept messages from a specific set of clients.
-%          \item Consensus protocols wait for messages to arrive from any subset of a known set of peer nodes.
-%          \item Thread pools spawn and kill threads to load balance effectively.
-%          \item All these protocols wait for one or more messages
-%            that may or may not ever arrive and execute in response.
-        \end{lvl}
-    \end{lvl}
-
-  \item We propose \emph{choreographic service architectures}, new features to support these types of applications.
-    \begin{lvl}
-      \item Wait-until-called paradigm
-        \begin{lvl}
-          \item Instead of executing a specific program, just wait until a client invokes the service.
-          \item Supports web servers and microservices.
-        \end{lvl}
-
-      \item General multi-receives
-        \begin{lvl}
-          \item The receive specifies a set of senders they are listening for (or just accept from anyone)
-            and the number of messages they are waiting on.
-          \item When enough messages from the specified senders arrive, the multi-receive returns allowing them to execute.
-          \item Multi-receive explicitly provides the recipient with the list of messages that arrived in order and the identity of the sender of each.
-        \end{lvl}
-
-      \item Spawning and killing threads
-        \begin{lvl}
-          \item We have preliminary work on a fork-join paradigm where new threads only exist in a bounded scope.
-          \item Protocols like thread pools need an unbounded scope, but that is challenging to know who is alive and who isn't.
-        \end{lvl}
-    \end{lvl}
-  \ethan{%
-    I was having real trouble with arguing for event-driven promises.
-    Feel free to add that in.
-    Also, interrupts feel totally bizarre in this setting (unless they're implemented as a spawned thread waiting)
-    because the choreography no longer specifies a bunch of in-order programs that run as a concurrent system;
-    individual locations are now out-of-order based on the interrupts.
-    I wasn't sure what to do with that.
-  }
-\end{outline}
-\hrule
-\vspace{0.5em}
-
-\noindent\textbf{AKH Thoughts}
-I think we may want to have thrusts similar to the following:
-\begin{outline}[2]{}
-\item \textbf{New Features}
-  \begin{lvl}
-  \item Spawning
-  \item Multireceive 
-  \item Events
-  \end{lvl}
-\item \textbf{Compilation Techniques}
-  \begin{lvl}
-  \item Avoid exponential Code Blowup (don't duplicate code if you know you must be in one branch!)
-  \item Create a benchmark and discuss potential runtime blowup coming from code blowup
-  \end{lvl}
-\item \textbf{New Theory}
-  \begin{lvl}
-  \item Wait-Until-Called
-  \item Strong EPP \ethan{connection: even harder to argue for correctness of EPP once you have process polymorphism if you don't have Strong EPP done.}
-  \end{lvl}
-\end{outline}
-
-If we do this, we may want to change the name of the grant to something like ``Empowering Process Polymorphism.''
-
-\vspace{0.5em}
-\hrule
-\vspace{0.5em}
-\fi
-
 Nearly every major computer system now relies on substantial concurrency for performance and scalability,
 yet designing and implementing correct concurrent systems is famously challenging.
-The new paradigm of \emph{choreographic programming}~\citep{Montesi13,Montesi23} offers to simplify development and analysis of such systems.
+The new paradigm of \emph{choreographic programming}~\citep{Montesi13,Montesi23} promises to simplify development and analysis of such systems.
 Instead of writing separate programs for each system component---forcing developers to analyze the interplay of these programs---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
 choreographies mirror more informal protocol specifications with a single top-level program
 describing both the local operations of each component---which we call \emph{processes}, though they may be threads, processes, or even entire nodes---and how they interact.
@@ -115,14 +19,14 @@ A compiler can then automatically generate three separate pieces of code, one fo
 with separate send and receive instructions.
 Contrast this with traditional programming techniques, which require developers to write the three separate pieces of code directly.
 Second, the existence of a global program makes global control flows more visible.
-This structure not only provides deadlock freedom by construction~\cite{CarboneM13}, but also drastically simplifies the other program analyses.
+This structure not only provides deadlock freedom by construction~\cite{CarboneM13}, but also drastically simplifies other program analyses.
 In this way, choreographies aim to ease system building, help with rapid prototyping,
-and simplify both checking that the implementation matches the specification
+and simplify both checking that implementations matches specifications
 and analyzing important system properties.
 
-Rapid progress in choreography theory in the past few years~\citep[e.g.,][]{HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}
+Rapid progress in choreographic theory in the past few years~\citep[e.g.,][]{HirschG22,CruzFilipeGLMP22,CruzFilipeGLMP23,BatesK+25,SamuelsonHC25}
 has brought this promise closer into view, but substantial work remains.
-In particular, most existing choreographic theory relies on three extremely strong assumptions
+In particular, current choreographic theory relies on three extremely strong assumptions
 that each rule out many common architectures, including thread pools, consensus protocols, and client-server models like web servers or microservice architectures:
 \begin{enumerate}
   \item\label{li:assume:static-locs}
@@ -130,7 +34,7 @@ that each rule out many common architectures, including thread pools, consensus 
   \item\label{li:assume:known-order}
     Those processes must send and receive messages in a pre-determined order.
   \item\label{li:assume:known-endpoints}
-    The senders and recipients of each message must be know to all relevant parties in advance.
+    The senders and recipients of each message must be known to all relevant parties in advance.
 \end{enumerate}
 
 A recent result by both PIs showing how to safely enable first-class process polymorphism~\citep{SamuelsonHC25} opens critical new avenues for research alleviating those assumptions.
@@ -140,7 +44,7 @@ On its own, this result is an important addition to the choreographic toolbox,
 but its real power lies in creating a foundation to accelerate advances in choreographic technology.
 
 \emph{We propose to leverage process polymorphism to develop substantial new theory and implementation techniques, bringing the choreographic programming paradigm closer to its promise.}
-Guiding this work will be the goal of enabling choreographies to specify common concurrent and distributed systems as choreographies.
+Guiding this work will be the goal of enabling choreographies to specify common concurrent and distributed systems.
 This is not possible currently, as many systems violate the assumptions above.
 Processing requests often involves spawning new threads, violating assumption~(\ref{li:assume:static-locs}).
 Microserves must wait for requests without knowing when or if they will arrive, violating assumption~(\ref{li:assume:known-order}).
@@ -150,7 +54,7 @@ violating assumption~(\ref{li:assume:known-endpoints}).
 
 Notably, the PIs have a longstanding and fruitful collaboration.
 They have worked together not only on process polymorphism~\cite{SamuelsonHC25}, but on information-flow control~\cite{SilverHCHZ23,HirschC21} and authorization logic~\cite{HirschACAT20}.
-They have additionally developed preliminary work for this grant together, as described below; PI~Hirsch has also developed preliminary work in the form of a choreographic compiler (also described below).
+They have additionally developed preliminary work for this grant together, as described below; PI~Hirsch has also developed preliminary work in the form of a choreographic compiler as described below.
 
 \subsection{Intellectual Merit}
 
@@ -189,11 +93,11 @@ As stated above, the PIs have a longstanding and fruitful collaboration.
 They have weekly remote meetings, and visit in person at least annually.
 Moreover, they each bring unique skills to the table which have proven synergistic many times in the past.
 
-\subparagraph{Ethan Cecchetti} is an expert in applying programming language theory to systems.
+\subparagraph{Ethan Cecchetti} is an expert in applying programming-language theory to systems.
 He is a coinventor of first-class process polymorphism for choreographies~\citep{SamuelsonHC25}.
 He has established links between foundational frameworks in programming languages and cryptography~\citep{KuennemannPC24,PatrignaniKWC24},
 developed foundational theory around information-flow control~\citep{HirschACAT20,HirschC21,SilverHCHZ23},
-and show how to generalize standard language-based conditions to more nuanced contexts~\citep{CecchettiMA17,CecchettiYNM21,Cecchetti25}.
+and shown how to generalize standard language-based conditions to more nuanced contexts~\citep{CecchettiMA17,CecchettiYNM21,Cecchetti25}.
 Finally, he has used applied cryptographic tools to design protocols for real-world decentralized systems~\citep{ZhangCCJS16,CecchettiZJKJS17,CrooksBCHAA18,CecchettiFMJ19}.
 
 \subparagraph{Andrew K. Hirsch} is an expert in the theory of programming languages.
