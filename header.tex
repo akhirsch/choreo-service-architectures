@@ -141,6 +141,18 @@
 
 \date{}
 
+% If this is a draft, add the draft warning.
+\ifdraft
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \fancyhf{}
+  \def\headrulewidth{0pt}
+  \fancyfoot[C]{\thepage}
+  \fancyhead[C]{\color{red}\large\itshape\fbox{Draft -- Do Not Distribute}}
+\else
+  \pagestyle{empty}
+\fi
+
 %\newsavebox{\mylistingbox}
 %
 %\pagestyle{fancy}
