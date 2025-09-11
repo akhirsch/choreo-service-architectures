@@ -27,11 +27,12 @@ Many systems incorporate thread pools that dynamically resize based on demand.
 That is, at high-demand times when requests are regularly waiting on threads, they spawn more,
 and at low-demand times when threads are regularly sitting idle, excess threads are killed.
 The proposed work would allow us to implement such thread pools as choreographies
-with code akin to the following, where~$F$ is a local thunk provided by the client~$\Client$
-specifying the computation to run.
+with code akin to the following, where~$\Client.f$ is a local thunk specifying the computation~\Client wants to be run.
+%  , where~$F$ is a local thunk provided by the client~$\Client$
+%specifying the computation to run.
 \[
   \addtocounter{numlevels}{1}
-  \Fun{\programfont{runJob}}{F}{
+%  \Fun{\programfont{runJob}}{F}{
 %    \LetInRaw*{
 %      \begin{array}[t]{@{}l@{}}
 %        T \ChorDef \ITE*{\Mngr.\programfont{enoughWorkers()}}
@@ -46,13 +47,13 @@ specifying the computation to run.
 %      \Client.\mathit{res}
 %    }
     \LetMany{{T}{\ITE*{\Mngr.\programfont{enoughWorkers()}}{\Mngr.\programfont{selectWorker}() \ColSend \Client}{\Mngr.\ChorFont{spawn} \ColSend \Client}}%
-             {T.f}{F \ColSend T}%
+             {T.f}{\Client.f \ColSend T}%
              {\Client.\mathit{res}}{T.(f~()) \ColSend \Client}}{%
       \Client.\text{``}\programfont{done}\text{''} \ColSend \Mngr \seq
       \Mngr.\programfont{releaseOrKillWorker}(T) \seq
       \Client.\mathit{res}
     }
-  }
+%  }
   \addtocounter{numlevels}{-1}
 \]
 
@@ -125,11 +126,11 @@ the code for a spawned thread~$T$ is simply the $T$-projection of the code for w
 In the thread pool example, if there are too many requests, the pool manager could easily spawn a new thread
 to process an individual request and that thread would automatically die after processing is complete.
 The code for this case might look as follows.
-As above, $F$~is a local thunk specifying~\Client's computation.
+%As above, $F$~is a local thunk specifying~\Client's computation.
 \[
   \addtocounter{numlevels}{1}
   \ForkIn{\Mngr}{T \ColSend \Client}{%
-    \LetMany{{T.f}{F \ColSend T}{\Client.\mathit{res}}{T.(f~()) \ColSend \Client}}
+    \LetMany{{T.f}{\Client.f \ColSend T}{\Client.\mathit{res}}{T.(f~()) \ColSend \Client}}
             {\Client.\mathit{res}}
   }
   \addtocounter{numlevels}{-1}
@@ -217,10 +218,10 @@ Here $P_1, \dotsc, P_k$ are the predicates and $C_1, \dotsc, C_k$ are choreograp
 specifying which computation to perform when the corresponding event triggers.
 Note that these are full choreographies, meaning they can involve computation by processes other than~$\ell$,
 but only~$\ell$ inherently knows which event triggered.
-Much like choreographic conditional statements, this creates a knowledge of choice problem~\citep{Montesi23}.
+Much like choreographic conditional statements, this creates a knowledge of choice problem~\citep{Montesi23}
 that selects between an arbitrary set of triggers, rather than only a two-way conditional branch.
 
-Note that trigger events are a strict generalization of the $k$-of-$n$ multi-receives proposed above.
+Note also that trigger events are a strict generalization of the $k$-of-$n$ multi-receives proposed above.
 We can implement $\{\ell_1.e_1, \dotsc, \ell_n.e_n\} \multircv{k} \ell$ using triggers as
 \[
   \{\ell_1.e_1, \dotsc, \ell_n.e_n\} \ColSend \ell ~\ChorFont{for~triggers}~ ((\programfont{length}~\mathit{msgs}) \geq k \Rightarrow \ell.\mathit{msgs}).
@@ -234,7 +235,7 @@ Triggered events will thus provide developers a means to specify these condition
 We will explore several different aspects of triggered events.
 First, we will investigate how to specify the predicates.
 Predicates should be able to examine both process names and values that have arrived,
-making the local language of the choreography and obvious choice.
+making the existing language for local computations used in the choreography and obvious choice.
 However, it is not clear how the system should behave if a trigger predicate fails to terminate.
 We will therefore investigate if there are appropriate terminating languages for specifying predicates.
 
