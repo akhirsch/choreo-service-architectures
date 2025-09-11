@@ -103,9 +103,9 @@ If we do this, we may want to change the name of the grant to something like ``E
 Nearly every major computer system now relies on substantial concurrency for performance and scalability,
 yet designing and implementing correct concurrent systems is famously challenging.
 The new paradigm of \emph{choreographic programming}~\citep{Montesi13,Montesi23} offers to simplify development and analysis of such systems.
-Instead of writing separate programs for each thread, process, or node, within a system---forcing developers to analyze the interplay of these programs---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+Instead of writing separate programs for each system component---forcing developers to analyze the interplay of these programs---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
 choreographies mirror more informal protocol specifications with a single top-level program
-describing both the local operations of each piece of the system and how they interact.
+describing both the local operations of each component---which we call \emph{processes}, though they may be threads, processes, or even entire nodes---and how they interact.
 
 The promise of choreographic programming is twofold.
 First, the implementation of a protocol can directly mirror its specification.
@@ -126,15 +126,15 @@ In particular, most existing choreographic theory relies on three extremely stro
 that each rule out many common architectures, including thread pools, consensus protocols, and client-server models like web servers or microservice architectures:
 \begin{enumerate}
   \item\label{li:assume:static-locs}
-    There must be a pre-determined set of locations.
+    There must be a pre-determined set of processes.
   \item\label{li:assume:known-order}
-    Those locations must send and receive messages in a pre-determined order.
+    Those processes must send and receive messages in a pre-determined order.
   \item\label{li:assume:known-endpoints}
     The senders and recipients of each message must be know to all relevant parties in advance.
 \end{enumerate}
 
 A recent result by both PIs showing how to safely enable first-class process polymorphism~\citep{SamuelsonHC25} opens critical new avenues for research alleviating those assumptions.
-Choreographies can now dynamically compute and communicate which location(s) will perform any given action,
+Choreographies can now dynamically compute and communicate which process(es) will perform any given action,
 allowing run-time flexibility and increased code reuse.
 On its own, this result is an important addition to the choreographic toolbox,
 but its real power lies in creating a foundation to accelerate advances in choreographic technology.
