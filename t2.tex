@@ -176,7 +176,7 @@ The first \AmIN check is necessary, but every subsequent check will produce the 
 
 We propose to eliminate these sorts of redundancies.
 For recursive polymorphic functions, we can compile to two different non-polymorphic recursive functions,
-one where the location variable resolves to the current party and one where it does not.
+one where the process variable resolves to the current party and one where it does not.
 The full function then uses a single \AmIN to select which non-polymorphic function to execute.
 This optimization removes a run-time identity check from every recursive invocation of the function,
 eliminating an unnecessary performance cost linear in the recursion depth.

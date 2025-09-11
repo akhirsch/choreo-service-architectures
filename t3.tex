@@ -8,12 +8,12 @@ Once a request arrives, some code executes to satisfy the request, after which t
 
 It may seem surprising that process polymorphism does not immediately provide the ability to create services;
 a process-polymorphic function can allow anyone to interact with a provider.
-Using existing technology, however, the provider would have to know the identity of the client before it can receive a requests.
-In a service, by contrast, a provider waits for a request from an unknown client.
+Using existing technology, however, the provider would need to know a request is coming and from which client before it can receive that request.
+In a service, by contrast, a provider waits for requests from an unknown clients without knowing if they will ever arrive.
 The PI's joint work on first-class process polymorphism~\cite{SamuelsonHC25} could support a layer of indirection,
-where the processing unit receives requests indirectly from a dispatcher without prior knowledge of the client's identity,
+where a process without prior knowledge of the client's identity receives requests indirectly from a dispatcher,
 but this fails to address the underlying problem.
-The dispatcher---which is fundamentally part of the service provider, not the client---would still need prior knowledge of the client's identity.
+The dispatcher---which is fundamentally part of the service provider---would still need prior knowledge of the request and client's identity.
 
 Adding the ability to write services immediately creates two problems:
 multiple clients racing the call the same service,
@@ -26,7 +26,7 @@ Once it has begun to serve one request, it must complete that request before pro
 This all happens despite the fact that the request appear in some particular order in the choreographic program.
 
 Existing choreographic languages have some notion of \emph{out-of-order execution}
-to model disjoint locations operating concurrently, but with services the problem is much more extreme.
+to model disjoint processes operating concurrently, but with services the problem is much more extreme.
 Requests arriving in a different order will cause the \emph{same service provider} to satisfy those requests in a different order.
 We believe that we can modify existing notions of out-of-order to fit choreographic services.
 However, we propose to take a more radical approach that will provide strong results and more elegant proofs
@@ -70,7 +70,7 @@ As long as these traces are \emph{equivalent up to rearranging actions involving
 endpoint projection will preserve that semantics of the choreography,
 giving a bisimulation between the choreographic and system \emph{traces}, even if not between their individual steps.
 Indeed, this guarantee is sufficient to prove both deadlock freedom
-and that the choreography accurately reflects each location's view of the system, and any properties that implies.
+and that the choreography accurately reflects each process's view of the system, and any properties that implies.
 %This is enough to allow us to prove deadlock freedom and to transport other important properties from the choreographic language to its projection.
 Thus, we do not need to allow out-of-order execution in the choreography at all.
 Instead, we simply define its in-order trace-collecting execution, and then consider this trace up to equivalence.
@@ -119,7 +119,7 @@ which requires that either some process can take a step no process has pending c
 We will address this difference using a notion of \emph{service functions} which behave almost like normal polymorphic functions at the choreographic level.
 For instance, we define a service as follows.
 \[
-  \ChorFont{service}~\Serv[\ChorFont{providers}\; \Alice](\alpha \ty \programfont{client},\, x \ty \alpha.\programfont{int}) \ChorDef C
+  \ChorFont{service}~\Serv[\ChorFont{provider}~\Alice](\alpha \ty \programfont{client},\, x \ty \alpha.\programfont{int}) \ChorDef C
 \]
 This declares a new service named~\Serv provided by~\Alice.
 The projection for~\Alice will wait for a message from an unknown client~$\alpha$ to initiate a request.
@@ -131,10 +131,10 @@ For~\Alice, the application projects to nothing;
 
 There are multiple intricacies to navigate.
 First, there must be restrictions on if and when choreographic service providers can stop providing those services.
-If they could do so at any time, a potential client may attempt to invoke a service that is no longer provided, leading to deadlock.
+If they could do so at any time, a potential client could attempt to invoke a service that is no longer provided, leading to deadlock.
 Similarly, any third party (non-client) involved in satisfying a service request must itself be a service.
 Without knowledge of how many times the service will be used,
-such a third party could either stop before the last request---causing the service to deadlock when they are not available to help process it---%%%
+any other third party could either stop before the last request---causing the service to deadlock when they are not available to help process it---%%%
 or expect more requests to arrive---becoming deadlocked waiting to process a service request that will never arrive.
 It is likely that other similar restrictions will be required, as we will discover when designing the feature and proving it remains deadlock-free.
 
@@ -142,7 +142,7 @@ Significant complexity also comes from the fact that services can become races:
 if two clients try to contact a service simultaneously, either request can get processed first.
 The choreographic semantics will need to reason about these possible reorderings.
 While adapting previous arguments for deadlock freedom and out-of-order executions should be sufficient,
-it will add additional complexity only already complex constructions.
+it will add additional complexity to already complex constructions.
 As described in Section~\ref{sec:new-parad-bisim}, our proposed formulation of traces outlined in Goal~\ref{goal:strong-epp}
 provides a simpler and cleaner path forward.
 
