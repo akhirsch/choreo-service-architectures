@@ -58,34 +58,38 @@ They have additionally developed preliminary work for this grant together, as de
 
 \subsection{Intellectual Merit}
 
-To alleviate the need for the assumptions listed above and allow choreographic programming to achieve its promise in practical systems, we plan to pursue the following research:
-\begin{itemize}
-  \item \textit{\hyperref[sec:t1]{Thrust 1} (Polymorphism-Enabled Features):}
-  \item \textit{\hyperref[sec:t2]{Thrust 2} (Improved Compilation for Process Polymorphism):}
-  \item \textit{\hyperref[sec:t3]{Thrust 3} (Better Guarantees for Process-Polymorphic Programs):}
-\end{itemize}
+To alleviate the need for the assumptions listed above and allow choreographic programming to achieve its promise in practical systems,
+we plan to pursue the following research, organized into three synergistic thrusts.
 
-\ethan{I'm going to come back to this section and tighten it up once there's a draft of the trusts.
-That way we can make sure it all matches up.}
+\paragraph{\hyperref[sec:t1]{Thrust 1 (Polymorphism-Enabled Features)}}
+Directly building on the power of first-class process polymorphism, we will develop features key to removing the restrictive assumptions.
+First, we will give choreographic programs the ability do \emph{dynamically spawn new threads} that can interact with other participants in a first-class way.
+Second, we will develop a \emph{multi-receive} primitive allowing a process to wait for messages from any number of senders, receiving those messages in any order.
+In particular, we plan to design a version of this feature that allows programmers to specify exactly what pattern of messages a program must receive before continuing,
+or even multiple patterns leading to different computations.
 
-In \hyperref[sec:t1]{Thrust 1}, we will develop new features enabled by process polymorphism.
-In particular, we plan to develop the ability to spawn new threads dynamically in a program, allowing them to interact with other choreographic participants in a first-class way.
-We also plan to develop choreographies wherein one participant can wait for any number of other participants to send a message, receiving those messages in any order.
-In particular, we plan to develop a version of this feature that will allow for a programmer to specify exactly what pattern of messages a program must receive before proceeding.
+\paragraph{\hyperref[sec:t2]{Thrust 2 (Improved Compilation for Process Polymorphism)}}
+The powerful features enabled by process polymorphism rely on it having an efficient implementation,
+but current theory requires a compilation step that can result in a single process's code being exponentially larger than the choreographic code.
+In this thrust we will examine when and how it is possible to optimize this process, allowing for smaller and more performant concurrent code.
+To validate our optimizations, we will also develop a benchmark of process-polymorphic programs,
+also helping speed the development of further process polymorphism technology.
 
-In \hyperref[sec:t2]{Thrust 2}, we will examine how process polymorphism is implemented in more detail.
-In particular, the current theory of process polymorphism tends to require an expensive compilation step which can result in a single process's code being exponentially bigger than the choreographic code.
-We plan to optimize this process in common cases, allowing for smaller and cheaper concurrent code.
-In order to validate this, we also plan to develop a benchmark of process-polymorphic programs, additionally helping speed the development of further process polymorphism technology.
+\paragraph{\hyperref[sec:t3]{Thrust 3 (Choreographic Services)}}
+Finally, we will add the ability for choreographies to express services, where a service provider processes requests from clients
+with no advanced knowledge of when or if a request will arrive or which client(s) might make them.
+Such services conflict with existing formulations of deadlock freedom and significantly complicate the associated proof techniques.
+We thus propose to develop a new paradigm for relating choreographies to the concurrent systems they specify.
+It will support more powerful and expressive choreographic language features, like services,
+while allowing analysis of important properties like deadlock freedom to transfer from the choreographic source code to the compiled system.
 
-Finally, in \hyperref[sec:t3]{Thrust 3}, we will explore new, more powerful, guarantees for process-polymorphic programs.
-In particular, we plan to make the deadlock-freedom guarantee provided by choreographies more subtle and more resilient.
-To make the guarantee more subtle, we plan to develop a version of deadlock freedom that allows for some processes to be waiting for an unknown client to contact them.
-Intuitively, a state in which all programs are either done or waiting for a client is not in deadlock; instead, every program did everything it needs to do.
-Current choreographic guarantees would rule this out, however.
-To make the guarantee more resilient, we plan to study how we can provide deadlock-freedom guarantees in the face of nonterminating processes.
-Currently, if a process goes into an infinite loop in a choreography, the choreographic semantics say that no other process takes any actions.
-We plan to make a better, more resilient guarantee by turning to the mathematical theory of the ordinals, which allows us to ``see past'' the infinite loops and make guarantees about other processes.
+\smallskip
+
+Each trust individually proposes a valuable advancement to the theory and practice of choreographic programming.
+Their combination, however, is substantially more powerful than each thrust on their own.
+Improving performance of process polymorphism (\hyperref[sec:t2]{Thrust 2}) makes all features relying on it more practical and effective.
+Similarly, services (\hyperref[sec:t3]{Thrust 3}) that can spawn new threads and condition request processing on multi-receive functionality (\hyperref[sec:t1]{Thrust 1})
+opens choreographic programming to vast new categories of applications.
 
 \subsection{Research Team}
 
