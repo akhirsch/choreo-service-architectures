@@ -2,9 +2,9 @@
 \subsection{Thrust 3: Choreographic Services}
 \label{sec:t3}
 
-While state of the art choreographies excel at writing multiprocess programs, they are not able to express \emph{services},
+While state-of-the-art choreographies excel at writing multiprocess programs, they are not able to express \emph{services},
 where a \emph{provider} process waits for \emph{requests} from unknown \emph{clients}.
-Once a request arrives, some code executes to satisfy the request, after which point the provider returns to waiting for further requests.
+Once a request arrives, some code executes to satisfy the request, after which the provider returns to waiting for further requests.
 
 It may seem surprising that process polymorphism does not immediately provide the ability to create services;
 a process-polymorphic function can allow anyone to interact with a provider.
@@ -23,7 +23,7 @@ Without coordination between~\Alice and~\Bob, these requests can occur in either
 or even have the underlying communication substrate (e.g., the network in a distributed system) reorder them in flight---%%%
 so \Server could correctly begin satisfying either request.
 Once it has begun to serve one request, it must complete that request before processing the next.
-This all happens despite the fact that the request appear in an order in the choreographic program.
+This all happens despite the fact that the request appear in some particular order in the choreographic program.
 
 Existing choreographic languages have some notion of \emph{out-of-order execution}
 to model disjoint locations operating concurrently, but with services the problem is much more extreme.
@@ -41,7 +41,7 @@ remains a deadlock, and we expect service functions to require some restrictions
 
 The rest of this subsection discusses these problems in more detail and proposes solutions.
 We emphasize that solving the out-of-order execution problem using the radical approach we suggest here is not required.
-It leads to more a elegant solution with stronger guarantees, but if it fails, we believe we can still provide a deadlock-free notion of choreographic services.
+It leads to a more elegant solution with stronger guarantees, but if it fails, we believe we can still provide a deadlock-free notion of choreographic services.
 
 \subsubsection{A New Paradigm for Bisimulations}
 \label{sec:new-parad-bisim}
@@ -50,8 +50,8 @@ Previous work on choreographic languages focused on proving that endpoint projec
 Such bisimulations require that any action taken by the choreographic code must be possible in the projected code and vice versa.
 Note that the projected code allows actions taken by disjoint processes to happen in any order; because of this, almost all choreographic languages allow for \emph{out-of-order execution}~\cite{Montesi23,HirschG22,Cruz-FilipeM17}.
 
-These bisimulations are often used to prove deadlock freedom, as the result immediately transfers from standard safety results of single-threaded programs,
-but it is far stronger than required, and in fact allows nearly any result about the program behavior to transfer from the choreography to the projected system.
+These bisimulations are often used to prove deadlock freedom, as the result immediately transfers from standard safety results of single-threaded programs.
+But such a bisimulation is far stronger than required, and in fact allows nearly any result about the program behavior to transfer from the choreography to the projected system.
 Unfortunately, this execution bisimulation is nearly impossible to establish for functional choreographic languages.
 Instead, existing work either weakens the choreographic language considerably (the approach the PIs have taken)~\cite{HirschG22,SamuelsonHC25} or applies fragile techniques that do not allow for basic additions to the language~\cite{CruzFilipeGLMP23}.
 As functional choreographies acquire more and more features, it becomes paramount to develop better techniques
@@ -78,7 +78,7 @@ Instead, we simply define its in-order trace-collecting execution, and then cons
 We believe this scheme works perfectly for terminating languages, but nontermination introduces substantial complication.
 Consider the choreography $\Alice.\programfont{loop} \seq \Bob.42 \ColSend \Cathy$.
 In this program, \Alice{} enters an infinite loop ``and then'' \Bob{} sends 42 to \Cathy.
-Using the above-proposed scheme with standard in-order trace-collecting semantics, the trace would consists only of \Alice in a loop.
+Using the above-proposed scheme with standard in-order trace-collecting semantics, the trace would consist only of \Alice in a loop.
 In the projected system, however, \Bob is free to send 42 to \Cathy at any time.
 This operation will never be reflected in the choreographic trace, so the traces are not equivalent, and the simple version of this approach falls apart.
 
@@ -98,13 +98,13 @@ We must keep track of such ``blocked'' processes throughout the semantics.
 \end{goal}
 
 In addition to simplifying existing choreographic theorem and making it more robust,
-this radical new approach provides a cleaner means to addressing the service request reordering concern discussed above.
+this radical new approach provides a cleaner means to addressing the service-request-reordering concern discussed above.
 When a provider starts and finishes satisfying a request, they emit dual trace events.
 We then require these events to be well-bracketed in traces---every request start event must have a matching request end event---%%%
 and consider traces equivalent if they reorder entire subtraces starting and ending with matching brackets.
 
 \paragraph{Preliminary Work}
-Both PIs, along with a graduate student from each of UW--Madison and Buffalo, have been working on developing this new paradigm of bisimulation.
+Both PIs have been collaborating on developing this new paradigm of bisimulation.
 In particular, we have developed a trace-collecting semantics allowing ordinal-length traces, including reasoning about ``blocked'' processes as discussed above.
 We are currently developing guarantees based on this semantics.
 
@@ -123,7 +123,7 @@ For instance, we define a service as follows.
 \]
 This declares a new service named~\Serv provided by~\Alice.
 The projection for~\Alice will wait for a message from an unknown client~$\alpha$ to initiate a request.
-When~\Serv is called in a choreography, we discover who the client it.
+When~\Serv is called in a choreography, we discover who the client is.
 For instance, the call $\Serv\,(\Bob, \Bob.42)$, telling us that \Bob is the client of the function.
 For~\Bob, this projects to sending a message to~\Alice, followed by participation in the body~$C$.
 For~\Alice, the application projects to nothing;
@@ -136,7 +136,7 @@ Similarly, any third party (non-client) involved in satisfying a service request
 Without knowledge of how many times the service will be used,
 such a third party could either stop before the last request---causing the service to deadlock when they are not available to help process it---%%%
 or expect more requests to arrive---becoming deadlocked waiting to process a service request that will never arrive.
-It is likely that other similar restrictions will be required, as we will discover when design the feature and proving it remains deadlock-free.
+It is likely that other similar restrictions will be required, as we will discover when designing the feature and proving it remains deadlock-free.
 
 Significant complexity also comes from the fact that services can become races:
 if two clients try to contact a service simultaneously, either request can get processed first.

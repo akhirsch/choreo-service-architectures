@@ -4,11 +4,11 @@
 
 \emph{Choreographic programming} is an emerging paradigm for concurrency which adopts a \emph{global} view of programs and thereby guarantees that programs cannot deadlock.
 The programmer writes a \emph{choreography}, which is a single program describing the actions of all components in a system that act concurrently, which we refer to as \emph{proccesses}.
-Processes may inclue threads, operating-system processes, nodes in a distributed system, or any other concurrently-executing piece of the same application.
+Processes may include threads, operating-system processes, nodes in a distributed system, or any other concurrently-executing piece of code.
 A procedure called \emph{endpoint projection (EPP)} then produces the code for each process that the programmer would traditionally write by hand.
 Because the processes' actions are determined by this global program, the projected program cannot deadlock.
 
-The key to choreographic deadlock freedom is to restrict communication in choreographies to a single send-and-receive operation.
+To provide deadlock freedom, choreographies restrict communication to a single send-and-receive operation.
 For instance, the choreography $\Alice.42 \ColSend \Bob$ says that the process~\Alice{} should send the message $42$ the process~\Bob, who should receive it.
 Endpoint projecting this choreography produces two programs: one for \Alice{} ($\textsf{send}~42 \mathrel{\textsf{to}} \Bob$) and one for \Bob{} ($\textsf{receive} \mathrel{\textsf{from}} \Alice$).
 Note that every time one process sends, the other receives, and thus these programs never deadlock.
@@ -24,13 +24,14 @@ $$
 This choreography branches based on \Alice{}'s boolean value~$b$.
 If this value is \textsf{true}, then \Bob{} must send a value to \Cathy{}, otherwise \Dave{} must send a value to \Eve{}.
 Now, \Bob{} and \Dave{} must each decide whether they are sending a value, while \Cathy{} and \Eve{} must each decide whether to wait to receive a message.
-Three potential answers occur in the current literature: we can reject this program entirely, we can require that the programmer explicitly insert notifications sent from \Alice{} to the other participants, or the compiler can implicitly insert those notifications.
+This problem is known as \emph{the knowledge-of-choice problem}~\cite{Montesi23}.
+Three potential solutions occur in the literature: we can reject this program entirely, we can require that the programmer explicitly insert notifications sent from \Alice{} to the other participants, or the compiler can implicitly insert those notifications.
 This project will take the second approach, allowing programmers to specify arbitrary patterns of notifications.
 
 Contrast choreographic programming with the ``traditional'' approach to concurrency, wherein a programmer writes a program for every process individually.
 In the traditional approach, the programmer must take care not to allow any mismatch of communication patterns or risk deadlock.
 \emph{Session types}, which allow a programmer to specify the interactions they expect to hold~\cite{DeYoungCPT09,CairesP10,GayV10,Wadler12,ScalasY19}, can help mitigate this risk.
-By checking that an process's program matches the session type and that different processes have compatible session types, the programmer can again be sure that their program will not deadlock.
+By checking that a process's program matches the session type and that different processes have compatible session types, the programmer can again be sure that their program will not deadlock.
 However, this now requires writing subtle specifications and potentially debugging complicated mismatches of interactions between disparate programs.
 In the choreographic setting, writing such a mismatched interaction is impossible.
 

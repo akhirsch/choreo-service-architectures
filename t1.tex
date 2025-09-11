@@ -8,18 +8,18 @@ The first thrust of this work will design new features for choreographic languag
 that rely on first-class process polymorphism and
 are needed to substantially broaden the range of possible choreographic applications.
 
-\subsubsection{Spawning New Locations}
+\subsubsection{Spawning New Processes}
 \label{sec:spawning}
 
-The first feature is the ability to launch and terminate new locations---computational units representing threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
+The first feature is the ability to launch and terminate new processes---computational units representing threads, processes, nodes, etc---% DO NOT DELETE, COMMENT IS IMPORTANT FOR SPACING
 a core feature of many concurrent systems.
 A few early choreographic works recognized its importance~\citep{CarboneM13,CruzFilipeM16a},
 but those works lacked critical features for realistic programming, like higher-order operations,
-and required locations to be spawned only to execute specific pre-defined operations.
+and required processes to be spawned only to execute specific pre-defined operations.
 
-We propose a much more general structure, where there is little distinction between an existing location and a newly-spawned one,
+We propose a much more general structure, where there is little distinction between an existing process and a newly-spawned one,
 and threads may exit when they are no longer needed.
-Moreover, we will integrate this dynamic location management with a host of modern choreographic advances,
+Moreover, we will integrate this dynamic process management with a host of modern choreographic advances,
 including higher-order functions and process polymorphism.
 
 \begin{example}{Dynamic Thread Pool}
@@ -56,69 +56,69 @@ specifying the computation to run.
   \addtocounter{numlevels}{-1}
 \]
 
-The PIs recent work on first-class location polymorphism showed how to
+The PIs recent work on first-class process polymorphism showed how to
 implement \emph{static} thread pools with a fixed set of threads~\citep{SamuelsonHC25}.
 However, that work assumes the set of threads in the entire system is fixed,
 inherently preventing dynamically resizing the thread pool.
 \end{example}
 
-Safely spawning and terminating locations in a choreography---be they threads, processes, or entire nodes---poses three distinct problems,
+Safely spawning and terminating processes in a choreography---be they threads, system processes, or entire nodes---poses three distinct problems,
 all illustrated by the above example.
 \begin{enumerate}
   \item\label{spawn:li:name}
-    Existing locations must be made aware of the new one in a way that allows them to interact with it.
-    Otherwise the new location cannot send or receive messages, meaning they cannot participate in the choreography in any meaningful way.
+    Existing processes must be made aware of the new one in a way that allows them to interact with it.
+    Otherwise the new process cannot send or receive messages, meaning they cannot participate in the choreography in any meaningful way.
 
     \textit{Example:} Clients of newly-spawned threads must know where to send their jobs.
 
   \item\label{spawn:li:kill}
-    If a location terminates, living locations must know not to send to or receive from the terminated location.
-    A retained reference to a dead name can result in a live location attempting to contact a dead one, producing deadlock.
+    If a process terminates, living processes must know not to send to or receive from the terminated process.
+    A retained reference to a dead name can result in a live process attempting to contact a dead one, producing deadlock.
 
     \textit{Example:} The pool manager and clients must properly discard all references to a killed thread.
 
   \item\label{spawn:li:code}
-    The new location must know what code to execute, and it must match the code existing nodes expect.
-    Without the correct code, the new location and existing locations might not have matching message sends and receives, causing deadlock.
+    The new process must know what code to execute, and it must match the code existing nodes expect.
+    Without the correct code, the new process and existing processes might not have matching message sends and receives, causing deadlock.
 
     \textit{Example:} New threads must know to wait for instructions from a client and execute them
     and reply with the result, or the client will deadlock.
 \end{enumerate}
 
-Problem~\ref{spawn:li:name} is immediately solved by first-class location polymorphism.
-Upon spawning a new thread, we give it a new name and bind that name to a location variable.
-That location now functions just as any other polymorphic location variable;
+Problem~\ref{spawn:li:name} is immediately solved by first-class process polymorphism.
+Upon spawning a new thread, we give it a new name and bind that name to a process variable.
+That process now functions just as any other polymorphic process variable;
 it can be transmitted across the network or used as an endpoint for sending and receiving messages.
 Problems~\ref{spawn:li:kill} and~\ref{spawn:li:code}---both of which can cause deadlock if not properly addressed---require additional research.
 
 A key insight is that Problem~\ref{spawn:li:kill} closely resembles classic memory management concerns.
 Just as memory should not be referenced after being freed, lest the application crash or expose critical security vulnerabilities,
-locations should not be referenced after they terminate, lest the application deadlock.
-Similarly, if a location's computation has completed, it should terminate to avoid leaking resources,
-just memory locations should be freed when their values are no longer needed.
+processes should not be referenced after they terminate, lest the application deadlock.
+Similarly, if a process's computation has completed, it should terminate to avoid leaking resources,
+just memory processes should be freed when their values are no longer needed.
 
 There are, however, two important differences between our setting and traditional memory management.
 Making our setting simpler is that, unlike values in memory which can themselves contain memory addresses,
-location names are opaque and it is the top-level code that refers to them.
+process names are opaque and it is the top-level code that refers to them.
 We therefore have no need for the sort of reachability analysis employed by many automatic memory management systems.
-Indeed, simple reference counting would be sufficient to determine when no more code references a spawned location.
+Indeed, simple reference counting would be sufficient to determine when no more code references a spawned process.
 Making our setting considerably more challenging, however, is Problem~\ref{spawn:li:code} mentioned above:
-new locations must know what code to execute.
-With an entirely dynamic lifetime, it is not clear what code a new location will need or how to determine that when spawning it.
+new processes must know what code to execute.
+With an entirely dynamic lifetime, it is not clear what code a new process will need or how to determine that when spawning it.
 
-We propose to investigate how various automatic memory management strategies translate to the context spawned choreographic location management.
+We propose to investigate how various automatic memory-management strategies translate to the context of spawned-choreographic-process management.
 In particular, we have substantial preliminary results showing the plausibility of scope-based lifetimes.
 We will also investigate other techniques, including reference counting---simplified in our setting---and Rust-style linearity
-to control aliasing and more directly identify inaccessible locations.
+to control aliasing and more directly identify inaccessible processes.
 
 \begin{goal}
   \label{goal:spawn}
-  Design and implement dynamic location spawning and termination in choreographies while maintaining deadlock-freedom guarantees.
+  Design and implement dynamic process spawning and termination in choreographies while maintaining deadlock-freedom guarantees.
 \end{goal}
 
-\paragraph{Preliminary Work: Scoped Locations}
-Preliminary work by both PIs and PI Cecchetti's graduate student
-has shown that basing the lifetime of a spawned location on a syntactic scope in the choreography is a viable approach.
+\paragraph{Preliminary Work: Scoped Processes}
+Preliminary work by both PIs
+has shown that basing the lifetime of a spawned process on a syntactic scope in the choreography is a viable approach.
 In particular, syntactic scoping provides a simple solution to Problem~\ref{spawn:li:code}:
 the code for a spawned thread~$T$ is simply the $T$-projection of the code for which it is in scope.
 
@@ -129,13 +129,13 @@ As above, $F$~is a local thunk specifying~\Client's computation.
 \[
   \addtocounter{numlevels}{1}
   \ForkIn{\Mngr}{T \ColSend \Client}{%
-    \LetMany{{T.f}{F \ColSend W}{\Client.\mathit{res}}{T.(f~()) \ColSend \Client}}
+    \LetMany{{T.f}{F \ColSend T}{\Client.\mathit{res}}{T.(f~()) \ColSend \Client}}
             {\Client.\mathit{res}}
   }
   \addtocounter{numlevels}{-1}
 \]
 In this code, the pool manager~$\Mngr$ forks a new thread,
-binds its name to the location variable~$T$, and sends it to the client~$\Client$.
+binds its name to the process variable~$T$, and sends it to the client~$\Client$.
 The client then sends its job to~$T$ who runs it and passes the result back to~$\Client$.
 
 Just as scoped memory management must ensure that references do not escape their scope through aliases or closures,
@@ -148,54 +148,53 @@ we also need to ensure references to~$T$ remain confined.
 Consider the following choreography that forks a process and returns a function closing over its name: $\ForkIn{\Alice}{T}{\LamN \_\ldotp \Alice.42 \ColSend T}$.
 This function, if applied, would immediately cause deadlock, as~\Alice attempts to send~$42$ to a thread that is no longer running.
 
-Our preliminary work indicates that we can resolve this dilemma by tracking the locations involved in a function
-and verifying that any function returned from a~\ForkN block does not reference the spawned location.
-Specifically, augmenting function types with the set of locations needed to compute the function
-allows the typing rule for~\ForkN to verify that those locations are all in scope---and thus alive---outside the~\ForkN block.
-Since location name variables are immutable, aliasing a name to a variable in a larger scope is not possible,
+Our preliminary work indicates that we can resolve this dilemma by tracking the processes involved in a function
+and verifying that any function returned from a~\ForkN block does not reference the spawned process.
+Specifically, augmenting function types with the set of processes needed to compute the function
+allows the typing rule for~\ForkN to verify that those processes are all in scope---and thus alive---outside the~\ForkN block.
+Since process-name variables are immutable, aliasing a name to a variable in a larger scope is not possible,
 so addressing the closure concern in this way solves the problem.
 
-\paragraph{Proposed Work: Spawned Locations with Unbounded Lifetimes}
-Our scope-based preliminary work provides a clean way to identify what code to provide a new location
-and makes clear that \emph{some} form of location spawning is viable, it is not without drawbacks.
-In particular, it is unable to handle new locations with indefinite lifetimes.
+\paragraph{Proposed Work: Spawned Processes with Unbounded Lifetimes}
+Our scope-based preliminary work provides a clean way to identify what code to provide a new process
+and makes clear that \emph{some} form of process spawning is viable, it is not without drawbacks.
+In particular, it is unable to handle new processes with indefinite lifetimes.
 For example, the thread pool may not wish to spawn additional threads only for a single task,
 but instead simply increase the pool capacity when demand is high
 and be willing to kill any thread that happens to be idle when demand is low.
 
-To support this more flexible mode of dynamic locations, we will investigate how other memory management techniques
-transfer into the choreographic location management domain.
-We will especially focus on how to provide the correct code to new locations with no static bound on their lifetime.
-Two promising approaches are (1)~to give new parties a view of the entire application code,
-and (2)~restrict new parties to specific behavior fixed when they are spawned.
-The first option would require existing locations to keep extra copies of the entire application code if they are able to initiate a spawn.
-The second would need static verification that existing locations only attempt to interact with a new party
-in accordance with the code it is provided, which would require statically tracking what different locations are able to do.
+To support this more-flexible mode of dynamic processes, we will investigate how other memory management techniques
+transfer into the choreographic process-management domain.
+We will especially focus on how to provide the correct code to new processes with no static bound on their lifetime.
+Two promising approaches are (1)~to give new processes a view of the entire application code,
+and (2)~restrict new processes to specific behavior fixed when they are spawned.
+The first option would require existing processes to keep extra copies of the entire application code if they are able to initiate a spawn.
+The second would need static verification that existing processes only attempt to interact with a newly spawned process
+in accordance with the code that new process is provided, which would require statically tracking what different processes can do.
 
 \subsubsection{Message Multi-Receives}
 \label{sec:multi-receive}
 
 The second new feature is a generalization of receiving a message that allows one recipient to receive multiple messages.
-Existing choreographies allow a single location to \emph{send} messages to multiple recipients in a single (choreographic) instruction~\citep{BatesK+25,SamuelsonHC25} (a broadcast),
-but no choreographies allow a single location to \emph{receive} messages from multiple senders as a single operation.
+Existing choreographies allow a single process to \emph{send} messages to multiple recipients in a single (choreographic) instruction~\citep{BatesK+25,SamuelsonHC25} (a broadcast),
+but no choreographies allow a single process to \emph{receive} messages from multiple senders as a single operation.
 
-\ethan{The version where all messages need to arrive is a synchronous gather operation (in the classic MPI sense). We need to mention that.}
-
-The power of this primitive becomes apparent when we require only a subset of the messages to arrive before the recipient can continue.
-This is a fundamental primitive currently missing from the choreographic literature that is necessary to build many systems,
+If we require all of the messages to arrive, this acts precisely the same as the gather operation in the Message Passing Interface~\cite{MPIForum93}.
+However, the power of this primitive becomes apparent when we require only a subset of the messages to arrive before the recipient can continue.
+This is a fundamental primitive---currently missing from the choreographic literature---that is necessary to build many systems,
 including distributed consensus protocols like Paxos~\citep{Lamport98}.
-In such protocols, each node waits for votes from all others on what operation to perform next,
+In such protocols, each node waits for votes from all others,
 but must be able to continue once messages from half of the other nodes have arrived.
 
 To accomplish this goal, we will add a new syntactic form to choreographies:
 \[
   \{\ell_1.e_1, \dotsc, \ell_n.e_n\} \multircv{k} \ell
 \]
-This term indicates that locations $\ell_1, \dotsc, \ell_n$ should run computations~$e_1, \dotsc, e_n$, respectively, and send the resulting values to~$\ell$.
-Location~$\ell$ can then accept those messages in any order and should continue executing once~$k$ of them arrive.
+This term indicates that processes $\ell_1, \dotsc, \ell_n$ should run computations~$e_1, \dotsc, e_n$, respectively, and send the resulting values to~$\ell$.
+Process~$\ell$ can then accept those messages in any order and should continue executing once~$k$ of them arrive.
 Instead of getting a single value, as in normal message passing, $\ell$~will receive a list of~$k$ values, one for each message.
 
-Making this feature useful fundamentally relies on process polymorphism.
+Most applications of this feature fundamentally rely on process polymorphism.
 When~$\ell$ receives its list of~$k$ messages, it must be able to identify who sent those messages
 to be able to respond or even simply record which ones arrived.
 With first-class process polymorphism, identifying the sender is simple;
@@ -216,10 +215,9 @@ Triggered events will be specified using the following switch-like syntax.
 \]
 Here $P_1, \dotsc, P_k$ are the predicates and $C_1, \dotsc, C_k$ are choreographies
 specifying which computation to perform when the corresponding event triggers.
-Note that these are full choreographies, meaning they can involve computation by locations other than~$\ell$,
+Note that these are full choreographies, meaning they can involve computation by processes other than~$\ell$,
 but only~$\ell$ inherently knows which event triggered.
 Much like choreographic conditional statements, this creates a knowledge of choice problem~\citep{Montesi23}.
-We will resolve this challenge using a generalization of the selection messages present in existing work~\citep[see, e.g.,][]{Montesi13,HirschG22,Montesi23,GraversenHM24}
 that selects between an arbitrary set of triggers, rather than only a two-way conditional branch.
 
 Note that trigger events are a strict generalization of the $k$-of-$n$ multi-receives proposed above.
@@ -235,7 +233,7 @@ Triggered events will thus provide developers a means to specify these condition
 
 We will explore several different aspects of triggered events.
 First, we will investigate how to specify the predicates.
-Predicates should be able to examine both location names and values that have arrived,
+Predicates should be able to examine both process names and values that have arrived,
 making the local language of the choreography and obvious choice.
 However, it is not clear how the system should behave if a trigger predicate fails to terminate.
 We will therefore investigate if there are appropriate terminating languages for specifying predicates.

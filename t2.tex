@@ -90,7 +90,7 @@ For instance, consider the following choreographic pseudocode:
   \LetIn{(\rho_1, \rho_2, \rho_3)}{\RandSets(\{\Alice, \Bob, \Cathy, \Dave\})}{(\rho_1.1, \rho_2.2, \rho_3.3)}
 \]
 This program randomly splits the set of participants $\{\Alice, \Bob, \Cathy, \Dave\}$ into three dynamic sets, $\rho_1$,~$\rho_2$, and~$\rho_3$, potentially with overlap.
-For each of~$i = 1, 2, 3$, locations in~$\rho_i$ produce the value~$i$.
+For each of~$i = 1, 2, 3$, processes in~$\rho_i$ produce the value~$i$.
 Since any participant could end up in any~$\rho_i$ independently, and which set(s) they are in is determined at run time, everyone must have eight code paths:
 one for each combination of being in~$\rho_1$, $\rho_2$, and/or~$\rho_3$.
 EPP thus compiles the body of the \LetN to a three-deep sequence of nested \AmIinN statements,
@@ -125,34 +125,33 @@ The \AmIinN should dispatch to the instructions of the first set that contains t
 This perspective enables substantial space for optimization.
 First, the extensive literature on compilation of object-oriented languages contains many optimizations for dispatch tables,
 and we expect some of them to be applicable.
-For instance, we will investigate how different representations of identities and location sets
+For instance, we will investigate how different representations of identities and sets of processes
 might allow for dispatch with constant-time address lookups rather than linear-time inclusion checks.
 
 Second, while multi-way \AmIN does not reduce code expansion in this intentionally-contrived worse-case example,
 it makes it considerably easier to identify when entire code paths are impossible and eliminate them statically.
 If we replace \RandSets by a partitioning function, as suggested above,
-the four clauses intersecting two or more partitions must have empty location sets.
-Since no location is in~$\varnothing$, those options can be removed entirely,
+the four clauses intersecting two or more partitions can be removed entirely,
 leaving only four branches for~\Alice, \Bob, \Cathy, and~\Dave, and the constant~$()$ for everyone else.
 
 To identify situations where constant-time address lookups are feasible and entire code paths are impossible,
 we propose to employ static analysis to determine which participants might be in a dynamic set.
 In the example above, \RandSets is given the constant set $\{\Alice, \Bob, \Cathy, \Dave\}$ as an argument,
-so those are the only locations that can be in~$\rho_1$, $\rho_2$, and~$\rho_3$.
+so those are the only processes that can be in~$\rho_1$, $\rho_2$, and~$\rho_3$.
 Note that tracking this information through polymorphic function calls becomes considerably more complicated.
 
 We will investigate multiple static analysis techniques in the literature that appear suited to provide the information needed for this optimization.
 In particular, abstract interpretation~\citep{CousotC77}, type-and-effect systems~\citep{NielsonN99}
-and refinement types~\citep{FreemanP91} can all track which locations might be in a given set.
+and refinement types~\citep{FreemanP91} can all track which processes might be in a given set.
 We plan to investigate each as possibilities.
-By providing EPP with information about which locations might be in each set,
+By providing EPP with information about which processes might be in each set,
 we can optimize the projection to only produce necessary \AmIN statements,
 avoiding both code blowup and unnecessary performance costs.
 
 \paragraph{Redundant Identity Checks}
 Another significant gain can come from removing redundant identity checks.
 A common pattern where they arise is recursive process-polymorphic functions that use the same process at every recursive call.
-For instance, consider the following function that takes a tree with data at location variable~$\alpha$
+For instance, consider the following function that takes a tree with data at process variable~$\alpha$
 and returns a tree with the same data at~$\beta$, sending the data one piece at a time.
 \[
   \newcommand{\TreeSend}{\programfont{tree\_send}}
@@ -198,7 +197,7 @@ These ideas lead to the following goal for optimizing compilation of process pol
 For each of the optimizations mentioned, we will prove that the optimization is semantics-preserving.
 That is, an optimized program must behave identically to its unoptimized counterpart, except for performance.
 This strong result ensures that any reasoning and analysis based on the less-performant
-existing compilation structures---including, critically, deadlock freedom guarantees---will remain valid in the optimized systems.
+existing compilation structures---including, critically, deadlock-freedom guarantees---will remain valid in the optimized systems.
 
 \subsubsection{Benchmarking Compilation Performance}
 
@@ -207,16 +206,16 @@ However, process-polymorphic choreographies were only introduced in 2024~\citep{
 and work on them has been entirely theoretical, lacking any publicly-available concrete compiler implementations.
 As a result, there do not yet exist any benchmark suites for EPP performance.
 
-We propose to build such a suite for process polymorphic programs to measure the impact of compiler optimizations.
+We propose to build such a suite for process-polymorphic programs to measure the impact of compiler optimizations.
 While we will use this new suite to assess, guide, and validate the structure of our own optimizations,
-we will design it as a stand-alone benchmark suite that others can also use to measure process polymorphic choreographic performance in the future.
+we will design it as a stand-alone benchmark suite that others can also use to measure process-polymorphic choreographic performance in the future.
 
 In building the suite, we will include best-case and worst-case benchmarks, but the bulk of the suite should be ``representative'' examples of process-polymorphic code.
 The best-case and worst-case benchmarks will be similar to the example described above
 with partitioned sets and independently random ones, respectively.
 Developing representative examples is more challenging due to the newness of process-polymorphic choreographies.
 We therefore propose to create a new repository of process-polymorphic code to discover how it is used in practice.
-We will leverage recent growth in choreographic implementations~\citep{ShenKK23,BatesK+25}
+We will leverage recent growth in choreographic implementations~\citep{ShenKK23,BatesK+25,GiallorenzoMP24,BohosianH25}
 to help assemble this corpus, as well as building our own case-studies using these implementations and our own.
 
 \begin{goal}
@@ -252,7 +251,7 @@ They design and develop the compiler under the direction of PI~Hirsch and his te
 
 As part of the proposed work, we will enhance the compiler with support for process polymorphism in both the optimized and unoptimized form.
 This will be performed by a combination of graduate and undergraduate students.
-Moreover, the undergraduate students will implement the benchmark suite of process-polymorphic programs described above.
+Moreover, the undergraduate students will help to implement the benchmark suite of process-polymorphic programs described above.
 This will not only allow us to experimentally verify our optimizations, but also (further) train undergraduate students in compiler design, functional programming, and experimental practice.
 
 %%% Local Variables:
